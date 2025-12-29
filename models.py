@@ -1,172 +1,110 @@
-from mongoengine import (
-    Document, EmbeddedDocument, StringField, ListField, ReferenceField,
-    DateTimeField, BooleanField, DictField, EmbeddedDocumentField,
-    IntField, URLField, FloatField
-)
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, JSON
+from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
+from database import Base
 
-utcnow = lambda: datetime.now(timezone.utc)
+# --- FIX: Return naive UTC time (tzinfo=None) to match existing Postgres tables ---
+def utcnow():
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
+class User(Base):
+    __tablename__ = "users"
 
-class User(Document):
-    meta = {"collection": "users", "indexes": [{"fields": ["email"], "unique": True}, "username", "roles"]}
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True) # Used as Full Name
+    email = Column(String, unique=True, index=True)
+    password_hash = Column(String) 
+    
+    roles = Column(JSON, default=["Business User"]) 
+    
+    is_active = Column(Boolean, default=True)
+    google_sub = Column(String, unique=True, nullable=True)
+    profile_picture_url = Column(String, nullable=True)
+    
+    # --- NEW FIELDS ---
+    job_title = Column(String, nullable=True)
+    company = Column(String, nullable=True)
+    notification_preferences = Column(JSON, default={
+        "emailNotifications": True,
+        "pushNotifications": True,
+        "weeklyDigest": False,
+        "workflowAlerts": True,
+        "securityAlerts": True,
+        "marketingEmails": False
+    })
+    # ------------------
 
-    username = StringField(required=True, unique=True)
-    email = StringField(required=True, unique=True)
-    password_hash = StringField(required=True)
-    password_algo = StringField(default="bcrypt")
-    roles = ListField(StringField(choices=["Business User", "Developer", "Administrator"]), required=True)
-    contact_info = DictField()
-    profile_picture_url = URLField()
-    mfa_enabled = BooleanField(default=False)
-    two_factor_secret = StringField()
-    last_login = DateTimeField()
-    account_status = StringField(choices=["active", "suspended", "deleted"], default="active")
-    timezone = StringField()
-    preferences = DictField()
-    created_at = DateTimeField(default=utcnow)
-    updated_at = DateTimeField(default=utcnow)
+    created_at = Column(DateTime, default=utcnow)
+    
+    whatsapp_conversations = relationship(
+        "WhatsAppConversation", 
+        back_populates="user",
+        foreign_keys="[WhatsAppConversation.user_id]"
+    )
+    assigned_conversations = relationship(
+        "WhatsAppConversation", 
+        back_populates="assigned_agent",
+        foreign_keys="[WhatsAppConversation.assigned_agent_id]"
+    )
 
+class WhatsAppConversation(Base):
+    __tablename__ = "whatsapp_conversations"
 
-class Message(EmbeddedDocument):
-    sender_id = StringField(required=True)
-    sender_type = StringField(choices=["user", "bot", "agent"], required=True)
-    content = StringField(required=True)
-    timestamp = DateTimeField(required=True)
-    status = StringField(choices=["sent", "received", "read"], default="sent")
-    direction = StringField(choices=["inbound", "outbound"], default="inbound")
-    language_detected = StringField()
-    ai_confidence = FloatField()
-    template_id = StringField()
-    attachments = ListField(DictField())
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    business_id = Column(String, index=True)
+    customer_phone = Column(String)
+    status = Column(String, default="open") 
+    assigned_agent_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime, default=utcnow)
 
+    # --- Relationships ---
+    user = relationship(
+        "User", 
+        back_populates="whatsapp_conversations",
+        foreign_keys=[user_id]
+    )
+    assigned_agent = relationship(
+        "User", 
+        back_populates="assigned_conversations",
+        foreign_keys=[assigned_agent_id]
+    )
+    messages = relationship("Message", back_populates="conversation")
 
-class WhatsAppConversation(Document):
-    meta = {
-        "collection": "whatsapp_conversations",
-        "indexes": [
-            {"fields": ["business_id", "customer_phone"]},
-            "-messages.timestamp",
-            "assigned_agent_id",
-        ]
-    }
+class Message(Base):
+    __tablename__ = "messages"
 
-    user = ReferenceField(User, required=True)
-    business_id = StringField(required=True)
-    customer_phone = StringField(required=True)
-    messages = ListField(EmbeddedDocumentField(Message))
-    escalated_to_human = BooleanField(default=False)
-    language_tag = StringField()
-    conversation_status = StringField(choices=["open", "closed", "pending"], default="open")
-    unread_message_count = IntField(default=0)
-    assigned_agent_id = ReferenceField(User, null=True)
-    conversation_tags = ListField(StringField())
-    response_time_metrics = DictField()
-    created_at = DateTimeField(default=utcnow)
-    updated_at = DateTimeField(default=utcnow)
+    id = Column(Integer, primary_key=True, index=True)
+    conversation_id = Column(Integer, ForeignKey("whatsapp_conversations.id"))
+    sender_type = Column(String) 
+    content = Column(String)
+    timestamp = Column(DateTime, default=utcnow)
+    
+    conversation = relationship("WhatsAppConversation", back_populates="messages")
 
+class Workflow(Base):
+    __tablename__ = "workflows"
 
-class KnowledgeBaseDocument(EmbeddedDocument):
-    doc_id = StringField(required=True)
-    title = StringField()
-    content = StringField()
-    version = IntField(default=1)
-    author_info = DictField()
-    metadata = DictField()
-    embedding_present = BooleanField(default=False)
-    created_at = DateTimeField(default=utcnow)
-    updated_at = DateTimeField(default=utcnow)
-
-
-class KnowledgeBase(Document):
-    meta = {"collection": "knowledge_bases", "indexes": ["business_id"]}
-
-    business_id = StringField(required=True)
-    documents = ListField(EmbeddedDocumentField(KnowledgeBaseDocument))
-    faqs = ListField(DictField())
-    product_catalog = DictField()
-    created_at = DateTimeField(default=utcnow)
-    updated_at = DateTimeField(default=utcnow)
-    access_permissions = StringField(choices=["public", "internal"], default="internal")
-    author_info = DictField()
-
-
-class SocialMediaContent(EmbeddedDocument):
-    text = StringField(required=True)
-    hashtags = ListField(StringField())
-    scheduled_time = DateTimeField()
-    platform = StringField(choices=["Facebook", "Instagram", "Twitter", "LinkedIn", "Other"])
-    status = StringField(choices=["pending", "approved", "posted", "rejected"], default="pending")
-    approval_history = ListField(DictField())
-    attachments = ListField(DictField())
-    created_at = DateTimeField(default=utcnow)
-    updated_at = DateTimeField(default=utcnow)
+    id = Column(Integer, primary_key=True, index=True)
+    business_id = Column(String, index=True)
+    name = Column(String)
+    status = Column(String, default="active")
+    triggers = Column(JSON) 
+    actions = Column(JSON) 
+    created_at = Column(DateTime, default=utcnow)
 
 
-class Campaign(Document):
-    meta = {"collection": "campaigns", "indexes": [("business_id", "campaign_start_date")]}
 
-    business_id = StringField(required=True)
-    content_items = ListField(EmbeddedDocumentField(SocialMediaContent))
-    approval_status = StringField(choices=["pending", "approved", "rejected"], default="pending")
-    campaign_start_date = DateTimeField()
-    campaign_end_date = DateTimeField()
-    target_audience = DictField()
-    budget = IntField()
-    performance_metrics = DictField()
-    approval_history = ListField(DictField())
-    created_by = ReferenceField(User)
-    updated_by = ReferenceField(User)
-    created_at = DateTimeField(default=utcnow)
-    updated_at = DateTimeField(default=utcnow)
+# --- NEW MODEL: Contact Form Submissions ---
+class ContactMessage(Base):
+    __tablename__ = "contact_messages"
 
-
-class WorkflowAction(EmbeddedDocument):
-    action_type = StringField(required=True)
-    parameters = DictField()
-
-
-class WorkflowExecutionEntry(EmbeddedDocument):
-    execution_id = StringField()
-    started_at = DateTimeField()
-    finished_at = DateTimeField()
-    status = StringField(choices=["success", "failed", "running"])
-    error = StringField()
-    run_metadata = DictField()
-
-
-class Workflow(Document):
-    meta = {"collection": "workflows", "indexes": ["business_id", "n8n_workflow_id"]}
-
-    business_id = StringField(required=True)
-    name = StringField()
-    triggers = ListField(DictField())
-    actions = ListField(EmbeddedDocumentField(WorkflowAction))
-    status = StringField(choices=["active", "inactive"], default="active")
-    n8n_workflow_id = StringField()
-    retry_policy = DictField()
-    execution_history = ListField(EmbeddedDocumentField(WorkflowExecutionEntry))
-    error_handling = DictField()
-    notification_settings = DictField()
-    created_by = ReferenceField(User)
-    modified_by = ReferenceField(User)
-    version = IntField(default=1)
-    audit_logs = ListField(DictField())
-    created_at = DateTimeField(default=utcnow)
-    updated_at = DateTimeField(default=utcnow)
-
-
-class AuditLog(Document):
-    meta = {"collection": "audit_logs", "indexes": [("user", "-timestamp"), "entity_type"]}
-
-    user = ReferenceField(User)
-    action = StringField(required=True)
-    entity_type = StringField()
-    target_entity = StringField()
-    timestamp = DateTimeField(required=True)
-    outcome = StringField()
-    ip_address = StringField()
-    session_id = StringField()
-    change_description = StringField()
-    device_info = StringField()
-    created_at = DateTimeField(default=utcnow)
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    email = Column(String)
+    mobile_number = Column(String, nullable=True)
+    whatsapp_number = Column(String, nullable=True)
+    company = Column(String, nullable=True)
+    subject = Column(String)
+    message = Column(String)
+    created_at = Column(DateTime, default=utcnow)
