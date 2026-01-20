@@ -23,7 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import BotIcon from "@/components/ui/BotIcon";
 import { jwtDecode } from "jwt-decode";
-import api from "@/lib/api"; // Import your API client
+import api from "@/lib/api"; 
 
 const ContactUs = () => {
   const { toast } = useToast();
@@ -32,8 +32,8 @@ const ContactUs = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    mobile_number: "",   // New Field
-    whatsapp_number: "", // New Field
+    mobile_number: "",   
+    whatsapp_number: "", 
     company: "",
     subject: "",
     message: "",
@@ -114,14 +114,14 @@ const ContactUs = () => {
     {
       icon: Phone,
       title: "Call Us",
-      description: "+1 (555) 123-4567",
+      description: "042-35971027",
       subtext: "Mon-Fri 9AM-6PM EST",
     },
     {
       icon: MapPin,
       title: "Visit Us",
-      description: "123 Innovation Drive",
-      subtext: "San Francisco, CA 94105",
+      description: "123 DHA PHASE 6, LAHORE",
+      subtext: "BLOCK 6, CA 94105",
     },
   ];
 

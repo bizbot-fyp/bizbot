@@ -6,50 +6,42 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import BotIcon from "@/components/ui/BotIcon";
 import { jwtDecode } from "jwt-decode";
+import areebaImg from "@/assets/team/areeba.png";
+import najamImg from "@/assets/team/najam.png";
+import omamaImg from "@/assets/team/omama.png";
+import hibaImg from "@/assets/team/hiba.png";
+
 
 const teamMembers = [
   {
-    name: "Sarah Chen",
+    name: "Syed Najam U Saqib ",
     role: "CEO & Founder",
     description: "Visionary AI Leader",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
-    initials: "SC",
+    avatar: najamImg,
+    initials: "NS",
   },
   {
-    name: "Marcus Johnson",
+    name: "HIBA NOOR",
     role: "CTO",
     description: "Tech Architecture Expert",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-    initials: "MJ",
+    avatar: hibaImg,
+    initials: "HN",
   },
   {
-    name: "Emily Rodriguez",
+    name: "AREEBA ABDULLAH",
     role: "Head of Product",
     description: "UX & Innovation Driven",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-    initials: "ER",
+    avatar: areebaImg,
+    initials: "AA",
   },
   {
-    name: "David Kim",
+    name: "OMAMA ARSHAD",
     role: "Lead Engineer",
     description: "Full-Stack Automation Guru",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-    initials: "DK",
+    avatar: omamaImg,
+    initials: "OA",
   },
-  {
-    name: "Priya Sharma",
-    role: "Head of Customer Success",
-    description: "Client Growth Specialist",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
-    initials: "PS",
-  },
-  {
-    name: "James Wilson",
-    role: "VP of Sales",
-    description: "Enterprise Sales Expert",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
-    initials: "JW",
-  },
+  
 ];
 
 const values = [
