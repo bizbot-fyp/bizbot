@@ -1,33 +1,55 @@
-from pydantic import BaseModel, EmailStr
-from typing import List, Optional, Dict, Any
-from datetime import datetime
+"""
+File Name: schemas.py
+Purpose: Define Pydantic models for request and response validation, including
+         authentication tokens, user data, Google login, notifications, and contact messages.
+Author: Omama Arshad
+"""
 
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, EmailStr
+
+
+# =========================
+# AUTHENTICATION SCHEMAS
+# =========================
 class Token(BaseModel):
     access_token: str
     token_type: str
+
 
 class TokenData(BaseModel):
     email: Optional[str] = None
     roles: List[str] = []
 
+
 class GoogleLoginRequest(BaseModel):
     id_token: str
 
+
+# =========================
+# USER SCHEMAS
+# =========================
 class UserBase(BaseModel):
     email: EmailStr
     username: str
 
+
 class UserCreate(UserBase):
     password: str
+
 
 class UserProfileUpdate(BaseModel):
     full_name: str
     job_title: Optional[str] = None
     company: Optional[str] = None
 
+
 class UserPasswordUpdate(BaseModel):
     current_password: str
     new_password: str
+
 
 class NotificationPreferences(BaseModel):
     emailNotifications: bool
@@ -36,6 +58,7 @@ class NotificationPreferences(BaseModel):
     workflowAlerts: bool
     securityAlerts: bool
     marketingEmails: bool
+
 
 class UserResponse(UserBase):
     id: int
@@ -49,7 +72,11 @@ class UserResponse(UserBase):
 
     class Config:
         from_attributes = True
-        
+
+
+# =========================
+# CONTACT SCHEMAS
+# =========================
 class ContactCreate(BaseModel):
     name: str
     email: EmailStr
@@ -58,6 +85,7 @@ class ContactCreate(BaseModel):
     company: Optional[str] = None
     subject: str
     message: str
+
 
 class ContactResponse(ContactCreate):
     id: int
