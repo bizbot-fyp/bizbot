@@ -115,7 +115,7 @@ const ContactUs = () => {
       icon: Phone,
       title: "Call Us",
       description: "042-35971027",
-      subtext: "Mon-Fri 9AM-6PM EST",
+      subtext: "Mon-Fri 9AM-6PM PST",
     },
     {
       icon: MapPin,
@@ -246,7 +246,7 @@ const ContactUs = () => {
                         <Input
                           id="name"
                           name="name"
-                          placeholder="John Doe"
+                          placeholder="Areeba"
                           value={formData.name}
                           onChange={handleChange}
                           required
@@ -258,7 +258,7 @@ const ContactUs = () => {
                           id="email"
                           name="email"
                           type="email"
-                          placeholder="john@company.com"
+                          placeholder="areeba@bizbot.com"
                           value={formData.email}
                           onChange={handleChange}
                           required
@@ -275,7 +275,7 @@ const ContactUs = () => {
                           <Input
                             id="mobile_number"
                             name="mobile_number"
-                            placeholder="+1 234 567 890"
+                            placeholder="0303-4235678"
                             value={formData.mobile_number}
                             onChange={handleChange}
                             className="pl-9"
@@ -289,7 +289,7 @@ const ContactUs = () => {
                           <Input
                             id="whatsapp_number"
                             name="whatsapp_number"
-                            placeholder="+1 234 567 890"
+                            placeholder="0323-9876543"
                             value={formData.whatsapp_number}
                             onChange={handleChange}
                             className="pl-9"
@@ -307,7 +307,7 @@ const ContactUs = () => {
                           <Input
                             id="company"
                             name="company"
-                            placeholder="Acme Inc."
+                            placeholder="Bizbot Inc."
                             value={formData.company}
                             onChange={handleChange}
                             className="pl-9"
@@ -418,7 +418,7 @@ const ContactUs = () => {
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground mt-4">
-                    All times are in Eastern Standard Time (EST)
+                    All times are in Pakistani Standard Time (PST)
                   </p>
                 </CardContent>
               </Card>
