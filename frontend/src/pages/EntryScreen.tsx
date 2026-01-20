@@ -5,7 +5,7 @@ import { ArrowRight, Sparkles, Zap, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BotIcon from "@/components/ui/BotIcon";
 import api from "@/lib/api";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { useGoogleLogin } from "@react-oauth/google";
 
 const EntryScreen = () => {
@@ -112,9 +112,17 @@ const EntryScreen = () => {
           </div>
 
           <div className="h-16 mb-6">
-            <p className="text-2xl lg:text-3xl font-semibold text-gradient-primary">
+            <p
+              className="text-2xl lg:text-3xl font-semibold"
+              style={{ color: "#232878" }}
+            >
               {displayText}
-              <span className="animate-typing-cursor text-primary">|</span>
+              <span
+                className="animate-typing-cursor"
+                style={{ color: "#232878" }}
+              >
+                |
+              </span>
             </p>
           </div>
 
@@ -167,7 +175,7 @@ const EntryScreen = () => {
             <div className="space-y-4">
               <Button
                 onClick={() => navigate("/login")}
-                className="w-full h-12 text-base font-semibold bg-gradient-primary hover:opacity-90 transition-opacity"
+                className="w-full h-12 text-base font-semibold text-white bg-[linear-gradient(to_right,#232878,#4348c0)] hover:opacity-90 transition-opacity"
               >
                 Log In
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -201,10 +209,22 @@ const EntryScreen = () => {
                 className="w-12 h-12 rounded-lg border border-border bg-card hover:bg-accent flex items-center justify-center"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path fill="currentColor" d="M21.35 11.1H12v2.8h5.35c-.23 1.2-.93 2.22-1.98 2.88v2.38h3.2c1.88-1.73 2.96-4.17 2.96-7.28 0-.7-.06-1.38-.18-2.02z"/>
-                  <path fill="currentColor" d="M12 22c2.7 0 4.96-.88 6.62-2.4l-3.2-2.38c-.88.6-2.01.95-3.42.95-2.64 0-4.87-1.78-5.66-4.18H2.18v2.62C3.93 19.57 7.7 22 12 22z"/>
-                  <path fill="currentColor" d="M5.34 13.09c-.19-.57-.3-1.18-.3-1.82 0-.64.11-1.25.3-1.82V7.07H2.18C1.45 8.54 1 10.2 1 12c0 1.8.45 3.46 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path fill="currentColor" d="M12 5.38c1.5 0 2.84.52 3.9 1.52l3.15-3.15C17.48 2.1 14.98 1 12 1 7.7 1 3.93 3.48 2.18 7.07l3.66 2.84c.78-2.6 3.02-4.53 6.16-4.53z"/>
+                  <path
+                    fill="currentColor"
+                    d="M21.35 11.1H12v2.8h5.35c-.23 1.2-.93 2.22-1.98 2.88v2.38h3.2c1.88-1.73 2.96-4.17 2.96-7.28 0-.7-.06-1.38-.18-2.02z"
+                  />
+                  <path
+                    fill="currentColor"
+                    d="M12 22c2.7 0 4.96-.88 6.62-2.4l-3.2-2.38c-.88.6-2.01.95-3.42.95-2.64 0-4.87-1.78-5.66-4.18H2.18v2.62C3.93 19.57 7.7 22 12 22z"
+                  />
+                  <path
+                    fill="currentColor"
+                    d="M5.34 13.09c-.19-.57-.3-1.18-.3-1.82 0-.64.11-1.25.3-1.82V7.07H2.18C1.45 8.54 1 10.2 1 12c0 1.8.45 3.46 1.18 4.93l2.85-2.22.81-.62z"
+                  />
+                  <path
+                    fill="currentColor"
+                    d="M12 5.38c1.5 0 2.84.52 3.9 1.52l3.15-3.15C17.48 2.1 14.98 1 12 1 7.7 1 3.93 3.48 2.18 7.07l3.66 2.84c.78-2.6 3.02-4.53 6.16-4.53z"
+                  />
                 </svg>
               </button>
 
@@ -213,8 +233,12 @@ const EntryScreen = () => {
                 onClick={() => loginWithGitHub()}
                 className="w-12 h-12 rounded-lg border border-border bg-card hover:bg-accent flex items-center justify-center"
               >
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.1-.75.08-.73.08-.73 1.22.09 1.86 1.26 1.86 1.26 1.08 1.85 2.83 1.31 3.52 1 .11-.78.42-1.31.76-1.61-2.66-.3-5.46-1.33-5.46-5.92 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.51.12-3.15 0 0 1-.32 3.3 1.23a11.53 11.53 0 016 0c2.3-1.55 3.3-1.23 3.3-1.23.66 1.64.24 2.85.12 3.15.77.84 1.24 1.91 1.24 3.22 0 4.6-2.8 5.61-5.48 5.91.43.37.81 1.1.81 2.22v3.3c0 .32.21.7.82.58C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/>
+                <svg
+                  className="w-5 h-5"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.1-.75.08-.73.08-.73 1.22.09 1.86 1.26 1.86 1.26 1.08 1.85 2.83 1.31 3.52 1 .11-.78.42-1.31.76-1.61-2.66-.3-5.46-1.33-5.46-5.92 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.51.12-3.15 0 0 1-.32 3.3 1.23a11.53 11.53 0 016 0c2.3-1.55 3.3-1.23 3.3-1.23.66 1.64.24 2.85.12 3.15.77.84 1.24 1.91 1.24 3.22 0 4.6-2.8 5.61-5.48 5.91.43.37.81 1.1.81 2.22v3.3c0 .32.21.7.82.58C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z" />
                 </svg>
               </button>
 
@@ -223,8 +247,12 @@ const EntryScreen = () => {
                 onClick={() => loginWithLinkedIn()}
                 className="w-12 h-12 rounded-lg border border-border bg-card hover:bg-accent flex items-center justify-center"
               >
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19 0h-14c-2.76 0-5 2.24-5 5v14c0 2.76 2.24 5 5 5h14c2.76 0 5-2.24 5-5v-14c0-2.76-2.24-5-5-5zm-11 19h-3v-10h3v10zm-1.5-11.3c-.97 0-1.75-.78-1.75-1.75S5.53 4.2 6.5 4.2 8.25 4.98 8.25 5.95 7.47 7.7 6.5 7.7zm13.5 11.3h-3v-5.5c0-1.38-1.12-2.5-2.5-2.5s-2.5 1.12-2.5 2.5v5.5h-3v-10h3v1.5c.87-1.18 2.3-1.87 3.75-1.87 2.76 0 5 2.24 5 5v5.37z"/>
+                <svg
+                  className="w-5 h-5"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M19 0h-14c-2.76 0-5 2.24-5 5v14c0 2.76 2.24 5 5 5h14c2.76 0 5-2.24 5-5v-14c0-2.76-2.24-5-5-5zm-11 19h-3v-10h3v10zm-1.5-11.3c-.97 0-1.75-.78-1.75-1.75S5.53 4.2 6.5 4.2 8.25 4.98 8.25 5.95 7.47 7.7 6.5 7.7zm13.5 11.3h-3v-5.5c0-1.38-1.12-2.5-2.5-2.5s-2.5 1.12-2.5 2.5v5.5h-3v-10h3v1.5c.87-1.18 2.3-1.87 3.75-1.87 2.76 0 5 2.24 5 5v5.37z" />
                 </svg>
               </button>
             </div>

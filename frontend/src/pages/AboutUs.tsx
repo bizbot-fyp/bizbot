@@ -1,6 +1,14 @@
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Target, Zap, Shield, Users, Linkedin, Twitter } from "lucide-react";
+import {
+  ArrowLeft,
+  Target,
+  Zap,
+  Shield,
+  Users,
+  Linkedin,
+  Twitter,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -10,7 +18,6 @@ import areebaImg from "@/assets/team/areeba.png";
 import najamImg from "@/assets/team/najam.png";
 import omamaImg from "@/assets/team/omama.png";
 import hibaImg from "@/assets/team/hiba.png";
-
 
 const teamMembers = [
   {
@@ -41,29 +48,32 @@ const teamMembers = [
     avatar: omamaImg,
     initials: "OA",
   },
-  
 ];
 
 const values = [
   {
     icon: Target,
     title: "Mission-Driven",
-    description: "We're committed to democratizing business automation for companies of all sizes.",
+    description:
+      "We're committed to democratizing business automation for companies of all sizes.",
   },
   {
     icon: Zap,
     title: "Innovation First",
-    description: "Constantly pushing boundaries with cutting-edge AI and automation technology.",
+    description:
+      "Constantly pushing boundaries with cutting-edge AI and automation technology.",
   },
   {
     icon: Shield,
     title: "Trust & Security",
-    description: "Enterprise-grade security ensuring your data is always protected.",
+    description:
+      "Enterprise-grade security ensuring your data is always protected.",
   },
   {
     icon: Users,
     title: "Customer Obsessed",
-    description: "Your success is our success. We build what businesses truly need.",
+    description:
+      "Your success is our success. We build what businesses truly need.",
   },
 ];
 
@@ -120,10 +130,10 @@ const AboutUs = () => {
               About <span className="text-primary">BizBot</span>
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
-              We're on a mission to revolutionize how businesses operate by making 
-              enterprise-grade automation accessible to everyone. Founded in 2021, 
-              BizBot has helped thousands of companies streamline their workflows 
-              and focus on what matters most—growth.
+              We're on a mission to revolutionize how businesses operate by
+              making enterprise-grade automation accessible to everyone. Founded
+              in 2021, BizBot has helped thousands of companies streamline their
+              workflows and focus on what matters most—growth.
             </p>
           </motion.div>
         </div>
@@ -165,7 +175,9 @@ const AboutUs = () => {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl font-bold text-foreground mb-4">Our Values</h2>
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Our Values
+            </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               The principles that guide everything we do at BizBot.
             </p>
@@ -184,8 +196,12 @@ const AboutUs = () => {
                     <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
                       <value.icon className="w-6 h-6 text-primary" />
                     </div>
-                    <h3 className="font-semibold text-foreground mb-2">{value.title}</h3>
-                    <p className="text-sm text-muted-foreground">{value.description}</p>
+                    <h3 className="font-semibold text-foreground mb-2">
+                      {value.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {value.description}
+                    </p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -203,7 +219,9 @@ const AboutUs = () => {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl font-bold text-foreground mb-4">Meet Our Team</h2>
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Meet Our Team
+            </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               The passionate people behind BizBot's innovation and success.
             </p>
@@ -227,9 +245,15 @@ const AboutUs = () => {
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-foreground">{member.name}</h3>
-                        <p className="text-sm text-primary font-medium">{member.role}</p>
-                        <p className="text-sm text-muted-foreground mt-1">{member.description}</p>
+                        <h3 className="font-semibold text-foreground">
+                          {member.name}
+                        </h3>
+                        <p className="text-sm text-primary font-medium">
+                          {member.role}
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {member.description}
+                        </p>
                       </div>
                     </div>
                     <div className="flex gap-2 mt-4 pt-4 border-t border-border/50">
@@ -261,14 +285,23 @@ const AboutUs = () => {
               Ready to Transform Your Business?
             </h2>
             <p className="text-muted-foreground mb-8">
-              Join thousands of companies already using BizBot to automate their success.
+              Join thousands of companies already using BizBot to automate their
+              success.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" onClick={handleGoBack} className="w-full sm:w-auto">
+              <Button
+                size="lg"
+                onClick={handleGoBack}
+                className="w-full sm:w-auto"
+              >
                 Go Back
               </Button>
               <Link to="/contact">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                >
                   Contact Sales
                 </Button>
               </Link>

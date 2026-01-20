@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import BotIcon from "@/components/ui/BotIcon";
 import api from "@/lib/api";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 import { useGoogleLogin } from "@react-oauth/google";
 
@@ -159,7 +159,11 @@ const Login = ({ setAuth }: LoginProps) => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -167,7 +171,7 @@ const Login = ({ setAuth }: LoginProps) => {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full h-12 text-base font-semibold bg-gradient-primary hover:opacity-90 transition-opacity"
+              className="w-full h-12 text-base font-semibold text-white bg-[linear-gradient(to_right,#232878,#4348c0)] hover:opacity-90 transition-opacity"
             >
               {isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -179,7 +183,9 @@ const Login = ({ setAuth }: LoginProps) => {
             </Button>
           </form>
 
-          {error && <p className="text-sm text-destructive text-center mt-4">{error}</p>}
+          {error && (
+            <p className="text-sm text-destructive text-center mt-4">{error}</p>
+          )}
 
           {/* OAuth Divider */}
           <div className="relative my-6">
@@ -225,11 +231,7 @@ const Login = ({ setAuth }: LoginProps) => {
               onClick={() => loginWithGitHub()}
               className="w-12 h-12 rounded-lg border border-border bg-card hover:bg-accent transition-colors flex items-center justify-center"
             >
-              <svg
-                className="w-5 h-5"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.1-.75.08-.73.08-.73 1.22.09 1.86 1.26 1.86 1.26 1.08 1.85 2.83 1.31 3.52 1 .11-.78.42-1.31.76-1.61-2.66-.3-5.46-1.33-5.46-5.92 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.51.12-3.15 0 0 1-.32 3.3 1.23a11.53 11.53 0 016 0c2.3-1.55 3.3-1.23 3.3-1.23.66 1.64.24 2.85.12 3.15.77.84 1.24 1.91 1.24 3.22 0 4.6-2.8 5.61-5.48 5.91.43.37.81 1.1.81 2.22v3.3c0 .32.21.7.82.58C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z" />
               </svg>
             </button>
@@ -239,12 +241,8 @@ const Login = ({ setAuth }: LoginProps) => {
               onClick={() => loginWithLinkedIn()}
               className="w-12 h-12 rounded-lg border border-border bg-card hover:bg-accent transition-colors flex items-center justify-center"
             >
-              <svg
-                className="w-5 h-5"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path d="M19 0h-14c-2.76 0-5 2.24-5 5v14c0 2.76 2.24 5 5 5h14c2.76 0 5-2.24 5-5v-14c0-2.76-2.24-5-5-5zm-11 19h-3v-10h3v10zm-1.5-11.3c-.97 0-1.75-.78-1.75-1.75S5.53 4.2 6.5 4.2 8.25 4.98 8.25 5.95 7.47 7.7 6.5 7.7zm13.5 11.3h-3v-5.5c0-1.38-1.12-2.5-2.5-2.5s-2.5 1.12-2.5 2.5v5.5h-3v-10h3v1.5c.87-1.18 2.3-1.87 3.75-1.87 2.76 0 5 2.24 5 5v5.37z"/>
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 0h-14c-2.76 0-5 2.24-5 5v14c0 2.76 2.24 5 5 5h14c2.76 0 5-2.24 5-5v-14c0-2.76-2.24-5-5-5zm-11 19h-3v-10h3v10zm-1.5-11.3c-.97 0-1.75-.78-1.75-1.75S5.53 4.2 6.5 4.2 8.25 4.98 8.25 5.95 7.47 7.7 6.5 7.7zm13.5 11.3h-3v-5.5c0-1.38-1.12-2.5-2.5-2.5s-2.5 1.12-2.5 2.5v5.5h-3v-10h3v1.5c.87-1.18 2.3-1.87 3.75-1.87 2.76 0 5 2.24 5 5v5.37z" />
               </svg>
             </button>
           </div>
