@@ -3,7 +3,6 @@ from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from database import Base
 
-# --- FIX: Return naive UTC time (tzinfo=None) to match existing Postgres tables ---
 def utcnow():
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
@@ -21,7 +20,6 @@ class User(Base):
     google_sub = Column(String, unique=True, nullable=True)
     profile_picture_url = Column(String, nullable=True)
     
-    # --- NEW FIELDS ---
     job_title = Column(String, nullable=True)
     company = Column(String, nullable=True)
     notification_preferences = Column(JSON, default={
@@ -32,7 +30,7 @@ class User(Base):
         "securityAlerts": True,
         "marketingEmails": False
     })
-    # ------------------
+  
 
     created_at = Column(DateTime, default=utcnow)
     
@@ -58,7 +56,7 @@ class WhatsAppConversation(Base):
     assigned_agent_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=utcnow)
 
-    # --- Relationships ---
+
     user = relationship(
         "User", 
         back_populates="whatsapp_conversations",
@@ -95,7 +93,6 @@ class Workflow(Base):
 
 
 
-# --- NEW MODEL: Contact Form Submissions ---
 class ContactMessage(Base):
     __tablename__ = "contact_messages"
 
