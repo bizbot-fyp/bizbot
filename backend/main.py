@@ -14,7 +14,7 @@ app = FastAPI(title="BizBot Backend")
 # 1. Create uploads folder if not exists
 os.makedirs("static/uploads", exist_ok=True)
 
-# 2. Mount Static Files (So frontend can view uploaded images)
+# 2. Mount Static Files 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.add_middleware(
@@ -63,7 +63,7 @@ async def startup():
 async def get_dashboard_data(user: models.User = Depends(deps.get_current_user)):
     return {"message": f"Welcome back, {user.username}", "role": user.roles}
 
-# FIX: Removed the extra 'Depends()' wrapper here
+
 @app.get("/api/admin/system-health")
 async def get_system_health(user: models.User = deps.RequireAdmin):
     return {"status": "Healthy", "cpu": "12%", "memory": "40%"}
