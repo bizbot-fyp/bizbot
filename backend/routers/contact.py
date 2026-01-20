@@ -30,11 +30,9 @@ async def submit_contact_form(
     
     return new_message
 
-# --- FIX IS HERE ---
 @router.get("/", response_model=List[schemas.ContactResponse])
 async def get_all_contacts(
     db: AsyncSession = Depends(get_db),
-    # REMOVED the extra Depends() wrapper below
     current_user: models.User = deps.RequireAdmin 
 ):
     result = await db.execute(select(models.ContactMessage).order_by(models.ContactMessage.created_at.desc()))
