@@ -130,6 +130,7 @@ The project follows an **Agile development approach**, consisting of:
 
 ---
 
+
 ## Installation Steps
 
 1. **Clone the repository**
@@ -143,22 +144,27 @@ cd bizbot
 
    a. Create and activate a Python virtual environment:
 
+```bash
 python -m venv venv
 # Linux / macOS
 source venv/bin/activate
 # Windows
 venv\Scripts\activate
-
+```
 
 b. Install backend dependencies:
 
+```bash
 pip install -r requirements.txt
+```
 
 c. Set environment variables for secrets and API keys:
 
+```bash
 export DATABASE_URL="postgresql+asyncpg://<user>:<password>@<host>:5432/bizzbot"
 export SECRET_KEY="<your-secret-key>"
 export GOOGLE_CLIENT_ID="<your-google-client-id>"
+```
 
 *(Use `.env` file in production or local development for convenience.)*
 
@@ -166,11 +172,15 @@ export GOOGLE_CLIENT_ID="<your-google-client-id>"
 
    a. Navigate to frontend folder:
 
+```bash
 cd frontend
+```
 
 b. Install dependencies:
 
+```bash
 npm install
+```
 
 ---
 
@@ -178,15 +188,19 @@ npm install
 
 1. **Start backend server**
 
+```bash
 # From the project root
 uvicorn main:app --reload
+```
 
 * API docs will be available at: `http://127.0.0.1:8000/docs`
 
 2. **Start frontend development server**
 
+```bash
 cd frontend
 npm run dev
+```
 
 * Frontend will be available at: `http://localhost:5173` (or as shown in terminal)
 
@@ -195,6 +209,8 @@ npm run dev
 * Ensure n8n workflows are running for scheduled automation tasks.
 
 ---
+
+
 ##  Conclusion
 
 BizBot Automation Agency demonstrates how AI-driven automation can be effectively applied to real-world business challenges. By integrating intelligent customer support, automated content creation, and workflow automation, the project delivers measurable efficiency gains and provides a scalable solution for modern SMEs.
