@@ -4,6 +4,9 @@ import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, Zap, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BotIcon from "@/components/ui/BotIcon";
+import api from "@/lib/api";
+import {jwtDecode} from "jwt-decode";
+import { useGoogleLogin } from "@react-oauth/google";
 
 const EntryScreen = () => {
   const [displayText, setDisplayText] = useState("");
@@ -35,6 +38,47 @@ const EntryScreen = () => {
 
     return () => clearInterval(typingInterval);
   }, [currentPhraseIndex]);
+
+  // ----------------------
+  // Google Login
+  // ----------------------
+  const handleLoginSuccess = (token: string) => {
+    localStorage.setItem("access_token", token);
+    const decoded: any = jwtDecode(token);
+    if (decoded.roles?.includes("Administrator")) {
+      navigate("/admin");
+    } else {
+      navigate("/dashboard");
+    }
+  };
+
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        const res = await api.post("/auth/google", {
+          id_token: tokenResponse.access_token,
+        });
+        handleLoginSuccess(res.data.access_token);
+      } catch (err) {
+        console.error(err);
+        alert("Google login failed");
+      }
+    },
+    onError: () => {
+      alert("Google login failed");
+    },
+  });
+
+  // ----------------------
+  // OAuth placeholders for GitHub/LinkedIn
+  // ----------------------
+  const loginWithGitHub = () => {
+    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/auth/github`;
+  };
+
+  const loginWithLinkedIn = () => {
+    window.location.href = `${process.env.REACT_APP_BACKEND_URL}/auth/linkedin`;
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col lg:flex-row relative overflow-hidden">
@@ -149,35 +193,38 @@ const EntryScreen = () => {
               </div>
             </div>
 
+            {/* OAuth buttons */}
             <div className="flex justify-center gap-4">
-              <button className="w-12 h-12 rounded-lg border border-border bg-card hover:bg-accent transition-colors flex items-center justify-center">
+              {/* Google */}
+              <button
+                onClick={() => loginWithGoogle()}
+                className="w-12 h-12 rounded-lg border border-border bg-card hover:bg-accent flex items-center justify-center"
+              >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path
-                    fill="currentColor"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  />
+                  <path fill="currentColor" d="M21.35 11.1H12v2.8h5.35c-.23 1.2-.93 2.22-1.98 2.88v2.38h3.2c1.88-1.73 2.96-4.17 2.96-7.28 0-.7-.06-1.38-.18-2.02z"/>
+                  <path fill="currentColor" d="M12 22c2.7 0 4.96-.88 6.62-2.4l-3.2-2.38c-.88.6-2.01.95-3.42.95-2.64 0-4.87-1.78-5.66-4.18H2.18v2.62C3.93 19.57 7.7 22 12 22z"/>
+                  <path fill="currentColor" d="M5.34 13.09c-.19-.57-.3-1.18-.3-1.82 0-.64.11-1.25.3-1.82V7.07H2.18C1.45 8.54 1 10.2 1 12c0 1.8.45 3.46 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="currentColor" d="M12 5.38c1.5 0 2.84.52 3.9 1.52l3.15-3.15C17.48 2.1 14.98 1 12 1 7.7 1 3.93 3.48 2.18 7.07l3.66 2.84c.78-2.6 3.02-4.53 6.16-4.53z"/>
                 </svg>
               </button>
-              <button className="w-12 h-12 rounded-lg border border-border bg-card hover:bg-accent transition-colors flex items-center justify-center">
+
+              {/* GitHub */}
+              <button
+                onClick={() => loginWithGitHub()}
+                className="w-12 h-12 rounded-lg border border-border bg-card hover:bg-accent flex items-center justify-center"
+              >
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z" />
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.1-.75.08-.73.08-.73 1.22.09 1.86 1.26 1.86 1.26 1.08 1.85 2.83 1.31 3.52 1 .11-.78.42-1.31.76-1.61-2.66-.3-5.46-1.33-5.46-5.92 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.51.12-3.15 0 0 1-.32 3.3 1.23a11.53 11.53 0 016 0c2.3-1.55 3.3-1.23 3.3-1.23.66 1.64.24 2.85.12 3.15.77.84 1.24 1.91 1.24 3.22 0 4.6-2.8 5.61-5.48 5.91.43.37.81 1.1.81 2.22v3.3c0 .32.21.7.82.58C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/>
                 </svg>
               </button>
-              <button className="w-12 h-12 rounded-lg border border-border bg-card hover:bg-accent transition-colors flex items-center justify-center">
+
+              {/* LinkedIn */}
+              <button
+                onClick={() => loginWithLinkedIn()}
+                className="w-12 h-12 rounded-lg border border-border bg-card hover:bg-accent flex items-center justify-center"
+              >
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+                  <path d="M19 0h-14c-2.76 0-5 2.24-5 5v14c0 2.76 2.24 5 5 5h14c2.76 0 5-2.24 5-5v-14c0-2.76-2.24-5-5-5zm-11 19h-3v-10h3v10zm-1.5-11.3c-.97 0-1.75-.78-1.75-1.75S5.53 4.2 6.5 4.2 8.25 4.98 8.25 5.95 7.47 7.7 6.5 7.7zm13.5 11.3h-3v-5.5c0-1.38-1.12-2.5-2.5-2.5s-2.5 1.12-2.5 2.5v5.5h-3v-10h3v1.5c.87-1.18 2.3-1.87 3.75-1.87 2.76 0 5 2.24 5 5v5.37z"/>
                 </svg>
               </button>
             </div>
