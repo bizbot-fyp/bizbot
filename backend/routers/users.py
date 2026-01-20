@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import shutil
 import os
 from sqlalchemy import select
-from typing import List # <--- Add List import
+from typing import List 
 import security
 import models
 import schemas
@@ -12,7 +12,7 @@ from database import get_db
 
 router = APIRouter(prefix="/api/users", tags=["Users"])
 
-# --- NEW: Admin Endpoint to Get All Users ---
+# Admin Endpoint to Get All Users 
 @router.get("/", response_model=List[schemas.UserResponse])
 async def get_all_users(
     db: AsyncSession = Depends(get_db),
@@ -21,12 +21,12 @@ async def get_all_users(
     result = await db.execute(select(models.User))
     return result.scalars().all()
 
-# 1. Get Current User Profile
+# Current User Profile
 @router.get("/me", response_model=schemas.UserResponse)
 async def read_users_me(current_user: models.User = Depends(deps.get_current_user)):
     return current_user
 
-# 2. Update Profile Info (Name, Job, Company)
+# Update Profile Info (Name, Job, Company)
 @router.put("/me/profile", response_model=schemas.UserResponse)
 async def update_user_profile(
     profile_data: schemas.UserProfileUpdate,
@@ -42,7 +42,7 @@ async def update_user_profile(
     await db.refresh(current_user)
     return current_user
 
-# 3. Update Password
+# Update Password
 @router.put("/me/password")
 async def update_password(
     password_data: schemas.UserPasswordUpdate,
@@ -61,7 +61,7 @@ async def update_password(
     await db.commit()
     return {"message": "Password updated successfully"}
 
-# 4. Update Notification Settings
+# Update Notification Settings
 @router.put("/me/notifications", response_model=schemas.UserResponse)
 async def update_notifications(
     prefs: schemas.NotificationPreferences,
@@ -75,14 +75,14 @@ async def update_notifications(
     await db.refresh(current_user)
     return current_user
 
-# 5. Upload Avatar
+# Upload Avatar
 @router.post("/me/avatar", response_model=schemas.UserResponse)
 async def upload_avatar(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
     current_user: models.User = Depends(deps.get_current_user)
 ):
-    # Ensure static directory exists
+
     os.makedirs("static/uploads", exist_ok=True)
     
     # Create unique filename: user_ID_avatar.ext
