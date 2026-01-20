@@ -21,14 +21,11 @@ Final Year Project (FYP)
 This project is submitted in partial fulfillment of the requirements for the **Bachelor of Science in Computer Science (BSCS)** degree.
 
 ---
+## Problem Statement
 
-##  Abstract
+Small and medium-sized businesses (SMEs) often face challenges in managing customer support, social media, and repetitive administrative tasks due to limited human resources. Manual handling of these tasks is time-consuming, prone to errors, and reduces operational efficiency. BizBot Automation Agency addresses these problems by providing AI-powered automation to streamline business processes, reduce workload, and improve customer engagement, making it ready for real-world deployment.
 
-Small and medium-sized businesses (SMEs) often struggle with customer support, social media management, and repetitive administrative tasks due to limited resources. BizBot Automation Agency is an AI-powered automation platform designed to address these challenges by providing intelligent WhatsApp customer support, automated social media content creation, and customizable workflow automation.
-
-The system integrates OpenAI GPT-4, Whisper, and Retrieval-Augmented Generation (RAG) with the n8n no-code automation platform to deliver scalable, cost-effective, and self-hosted solutions. BizBot enables businesses to reduce operational workload, improve customer engagement, and focus on strategic growth while maintaining control over their data and infrastructure.
-
----
+---  
 
 ##  Objectives
 
@@ -133,25 +130,73 @@ The project follows an **Agile development approach**, consisting of:
 
 ---
 
-##  Project Team
+## Installation Steps
 
-| Name               | Responsibility                  |
-| ------------------ | ------------------------------- |
-| Omama Arshad       | Backend APIs & Automation Workflows |
-| Areeba Abdullah    | Frontend (ReactJS) & AI Chatbot |
-| Hiba Noor          | Frontend (ReactJS) & AI Chatbot |
-| Syed Najam U Saqib | Backend & n8n Workflows         |
+1. **Clone the repository**
+
+```bash
+git clone https://github.com/<your-username>/bizbot.git
+cd bizbot
+```
+
+2. **Setup backend (FastAPI + Python)**
+
+   a. Create and activate a Python virtual environment:
+
+python -m venv venv
+# Linux / macOS
+source venv/bin/activate
+# Windows
+venv\Scripts\activate
+
+
+b. Install backend dependencies:
+
+pip install -r requirements.txt
+
+c. Set environment variables for secrets and API keys:
+
+export DATABASE_URL="postgresql+asyncpg://<user>:<password>@<host>:5432/bizzbot"
+export SECRET_KEY="<your-secret-key>"
+export GOOGLE_CLIENT_ID="<your-google-client-id>"
+
+*(Use `.env` file in production or local development for convenience.)*
+
+3. **Setup frontend (React + TypeScript + Tailwind CSS)**
+
+   a. Navigate to frontend folder:
+
+cd frontend
+
+b. Install dependencies:
+
+npm install
 
 ---
 
+## How to Run the Project
+
+1. **Start backend server**
+
+# From the project root
+uvicorn main:app --reload
+
+* API docs will be available at: `http://127.0.0.1:8000/docs`
+
+2. **Start frontend development server**
+
+cd frontend
+npm run dev
+
+* Frontend will be available at: `http://localhost:5173` (or as shown in terminal)
+
+3. **Optional: Start automation workflows (n8n)**
+
+* Ensure n8n workflows are running for scheduled automation tasks.
+
+---
 ##  Conclusion
 
 BizBot Automation Agency demonstrates how AI-driven automation can be effectively applied to real-world business challenges. By integrating intelligent customer support, automated content creation, and workflow automation, the project delivers measurable efficiency gains and provides a scalable solution for modern SMEs.
-
----
-
-##  License
-
-This project is developed for **academic and research purposes only**.
 
 ---
