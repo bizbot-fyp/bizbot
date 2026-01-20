@@ -23,22 +23,37 @@ export const BotIcon = ({ size = "md", className, animated = true }: BotIconProp
   return (
     <motion.div
       className={cn(
-        "relative bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center",
+        "relative rounded-xl flex items-center justify-center",
         sizeClasses[size],
         className
       )}
+      style={{
+        background: "linear-gradient(to bottom right, #232878, #232878CC)"
+      }}
       animate={animated ? { y: [0, -3, 0] } : undefined}
       transition={animated ? { duration: 2, repeat: Infinity, ease: "easeInOut" as const } : undefined}
     >
       {/* Antenna */}
-      <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-0.5 h-2 bg-primary rounded-full">
-        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-primary rounded-full" />
+      <div
+        className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-0.5 h-2 rounded-full"
+        style={{ backgroundColor: "#232878" }}
+      >
+        <div
+          className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full"
+          style={{ backgroundColor: "#232878" }}
+        />
       </div>
-      
+
       {/* Eyes */}
       <div className="flex gap-2">
-        <div className={cn("bg-primary-foreground rounded-full", eyeSizes[size])} />
-        <div className={cn("bg-primary-foreground rounded-full", eyeSizes[size])} />
+        <div
+          className={cn("rounded-full", eyeSizes[size])}
+          style={{ backgroundColor: "white" }}
+        />
+        <div
+          className={cn("rounded-full", eyeSizes[size])}
+          style={{ backgroundColor: "white" }}
+        />
       </div>
     </motion.div>
   );
