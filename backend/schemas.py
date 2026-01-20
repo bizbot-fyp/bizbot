@@ -2,7 +2,6 @@ from pydantic import BaseModel, EmailStr
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 
-# --- Existing Schemas (Keep these) ---
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -21,8 +20,6 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str
 
-# --- NEW SCHEMAS FOR PROFILE ---
-
 class UserProfileUpdate(BaseModel):
     full_name: str
     job_title: Optional[str] = None
@@ -32,7 +29,6 @@ class UserPasswordUpdate(BaseModel):
     current_password: str
     new_password: str
 
-# This matches the state in your UserProfile.tsx
 class NotificationPreferences(BaseModel):
     emailNotifications: bool
     pushNotifications: bool
@@ -46,7 +42,6 @@ class UserResponse(UserBase):
     roles: List[str]
     is_active: bool
     profile_picture_url: Optional[str] = None
-    # New fields
     job_title: Optional[str] = None
     company: Optional[str] = None
     notification_preferences: Optional[Dict[str, Any]] = None
@@ -55,8 +50,6 @@ class UserResponse(UserBase):
     class Config:
         from_attributes = True
         
-        
-# --- NEW SCHEMAS FOR CONTACT FORM ---
 class ContactCreate(BaseModel):
     name: str
     email: EmailStr
