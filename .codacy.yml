@@ -1,0 +1,34 @@
+---
+# Codacy Configuration File for FastAPI (Python) and React (TypeScript)
+
+engines:
+  # Python Static Analysis
+  pylint:
+    enabled: true
+    python_version: 3
+  
+  # Python Security Analysis (Good for FastAPI)
+  bandit:
+    enabled: true
+
+  # JavaScript/TypeScript Analysis
+  eslint:
+    enabled: true
+
+  # General code duplication check
+  duplication:
+    enabled: true
+
+# Exclude build artifacts, virtual environments, and node modules
+exclude_paths:
+  - "**/node_modules/**"
+  - "**/__pycache__/**"
+  - "**/venv/**"
+  - "**/.venv/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/.git/**"
+  - "**/coverage/**"
+  - "**/*.min.js"
+  - "**/*.test.ts"
+  - "**/*.spec.ts"
