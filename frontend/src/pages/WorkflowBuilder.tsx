@@ -1,3 +1,14 @@
+/**
+ * File: WorkflowBuilder.tsx
+ * Author: Hiba Noor
+ *
+ * Description:
+ *   This component implements a visual drag-and-drop workflow builder.
+ *   It allows users to create, edit, and connect workflow nodes such as triggers,
+ *   actions, conditions, delays, filters, and integrations.For user it is read only
+ *   admin will have full access
+ */
+
 import { useState, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";

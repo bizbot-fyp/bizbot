@@ -3,7 +3,8 @@
  * Author: Areeba Abdullah
  *
  * Purpose: Renders the Contact Us page for BizBot, including a contact form,
- *          WhatsApp support, office hours, and enterprise sales information.
+ * WhatsApp support, office hours, and enterprise sales information.
+ * Updated with brand color #1E2361.
  */
 
 import { useState } from "react";
@@ -20,7 +21,6 @@ import {
   Building2,
   Headphones,
   ArrowLeft,
-  Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -153,7 +153,10 @@ const ContactUs = () => {
             <Link to="/about">
               <Button variant="ghost">About</Button>
             </Link>
-            <Button onClick={handleGoBack} variant="default" className="gap-2">
+            <Button
+              onClick={handleGoBack}
+              className="gap-2 bg-[#1E2361] hover:bg-[#1E2361]/90 text-white"
+            >
               <ArrowLeft className="w-4 h-4" />
               Go Back
             </Button>
@@ -162,7 +165,7 @@ const ContactUs = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-b from-primary/5 to-background">
+      <section className="py-20 bg-gradient-to-b from-[#1E2361]/10 to-background">
         <div className="container mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -171,7 +174,7 @@ const ContactUs = () => {
             className="text-center max-w-3xl mx-auto"
           >
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-              Get in <span className="text-primary">Touch</span>
+              Get in <span className="text-[#1E2361]">Touch</span>
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
               Have questions about BizBot? We're here to help. Reach out to our
@@ -181,7 +184,7 @@ const ContactUs = () => {
         </div>
       </section>
 
-      {/* WhatsApp CTA Banner */}
+      {/* WhatsApp CTA Banner - Kept Green for Brand Identity */}
       <section className="py-6 bg-[#25D366]/10 border-y border-[#25D366]/20">
         <div className="container mx-auto px-6">
           <motion.div
@@ -226,15 +229,15 @@ const ContactUs = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Card className="h-full border-border/50 hover:border-primary/30 transition-colors text-center">
+                <Card className="h-full border-border/50 hover:border-[#1E2361]/40 transition-colors text-center">
                   <CardContent className="p-6">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                      <method.icon className="w-6 h-6 text-primary" />
+                    <div className="w-12 h-12 rounded-xl bg-[#1E2361]/10 flex items-center justify-center mx-auto mb-4">
+                      <method.icon className="w-6 h-6 text-[#1E2361]" />
                     </div>
                     <h3 className="font-semibold text-foreground mb-1">
                       {method.title}
                     </h3>
-                    <p className="text-primary font-medium">
+                    <p className="text-[#1E2361] font-medium">
                       {method.description}
                     </p>
                     <p className="text-sm text-muted-foreground mt-1">
@@ -258,13 +261,12 @@ const ContactUs = () => {
               <Card className="border-border/50">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Send className="w-5 h-5 text-primary" />
+                    <Send className="w-5 h-5 text-[#1E2361]" />
                     Send us a Message
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSubmit} className="space-y-5">
-                    {/* Name & Email */}
                     <div className="grid md:grid-cols-2 gap-5">
                       <div className="space-y-2">
                         <Label htmlFor="name">Full Name</Label>
@@ -275,6 +277,7 @@ const ContactUs = () => {
                           value={formData.name}
                           onChange={handleChange}
                           required
+                          className="focus-visible:ring-[#1E2361]"
                         />
                       </div>
                       <div className="space-y-2">
@@ -287,11 +290,11 @@ const ContactUs = () => {
                           value={formData.email}
                           onChange={handleChange}
                           required
+                          className="focus-visible:ring-[#1E2361]"
                         />
                       </div>
                     </div>
 
-                    {/* NEW: Mobile & WhatsApp */}
                     <div className="grid md:grid-cols-2 gap-5">
                       <div className="space-y-2">
                         <Label htmlFor="mobile_number">Mobile Number</Label>
@@ -303,7 +306,7 @@ const ContactUs = () => {
                             placeholder="0303-4235678"
                             value={formData.mobile_number}
                             onChange={handleChange}
-                            className="pl-9"
+                            className="pl-9 focus-visible:ring-[#1E2361]"
                           />
                         </div>
                       </div>
@@ -317,13 +320,12 @@ const ContactUs = () => {
                             placeholder="0323-9876543"
                             value={formData.whatsapp_number}
                             onChange={handleChange}
-                            className="pl-9"
+                            className="pl-9 focus-visible:ring-[#1E2361]"
                           />
                         </div>
                       </div>
                     </div>
 
-                    {/* Company & Subject */}
                     <div className="grid md:grid-cols-2 gap-5">
                       <div className="space-y-2">
                         <Label htmlFor="company">Company Name</Label>
@@ -335,7 +337,7 @@ const ContactUs = () => {
                             placeholder="Bizbot Inc."
                             value={formData.company}
                             onChange={handleChange}
-                            className="pl-9"
+                            className="pl-9 focus-visible:ring-[#1E2361]"
                           />
                         </div>
                       </div>
@@ -346,7 +348,7 @@ const ContactUs = () => {
                             setFormData({ ...formData, subject: value })
                           }
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="focus:ring-[#1E2361]">
                             <SelectValue placeholder="Select a topic" />
                           </SelectTrigger>
                           <SelectContent>
@@ -364,7 +366,6 @@ const ContactUs = () => {
                       </div>
                     </div>
 
-                    {/* Message */}
                     <div className="space-y-2">
                       <Label htmlFor="message">Message</Label>
                       <Textarea
@@ -375,12 +376,13 @@ const ContactUs = () => {
                         value={formData.message}
                         onChange={handleChange}
                         required
+                        className="focus-visible:ring-[#1E2361]"
                       />
                     </div>
 
                     <Button
                       type="submit"
-                      className="w-full"
+                      className="w-full bg-[#1E2361] hover:bg-[#1E2361]/90 text-white"
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? (
@@ -407,7 +409,7 @@ const ContactUs = () => {
               transition={{ duration: 0.6 }}
               className="lg:col-span-2 space-y-6"
             >
-              {/* Quick Connect WhatsApp */}
+              {/* WhatsApp Support Card */}
               <Card className="border-[#25D366]/30 bg-[#25D366]/5">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4 mb-4">
@@ -441,7 +443,7 @@ const ContactUs = () => {
               <Card className="border-border/50">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <Clock className="w-5 h-5 text-primary" />
+                    <Clock className="w-5 h-5 text-[#1E2361]" />
                     <h3 className="font-semibold text-foreground">
                       Office Hours
                     </h3>
@@ -478,7 +480,7 @@ const ContactUs = () => {
               <Card className="border-border/50">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <Building2 className="w-5 h-5 text-primary" />
+                    <Building2 className="w-5 h-5 text-[#1E2361]" />
                     <h3 className="font-semibold text-foreground">
                       Enterprise Sales
                     </h3>
@@ -487,7 +489,10 @@ const ContactUs = () => {
                     Looking for a custom solution for your organization? Our
                     enterprise team is ready to help.
                   </p>
-                  <Button variant="outline" className="w-full gap-2">
+                  <Button
+                    variant="outline"
+                    className="w-full gap-2 border-[#1E2361] text-[#1E2361] hover:bg-[#1E2361]/10"
+                  >
                     <Headphones className="w-4 h-4" />
                     Schedule a Call
                   </Button>

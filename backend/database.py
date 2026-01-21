@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 # DATABASE CONFIGURATION
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+asyncpg://postgres:password@localhost:5432/bizzbot"  # default fallback
+    "postgresql+asyncpg://postgres:12345@localhost:5433/bizbot"  # default fallback
 )
 
 # Create asynchronous engine

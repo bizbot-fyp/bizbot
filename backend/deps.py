@@ -1,10 +1,3 @@
-"""
-File Name: deps.py
-Purpose: Handle authentication, authorization, and role-based access control
-         (RBAC) using JWT tokens in FastAPI.
-Author: <Najam U Saqib>
-"""
-
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
@@ -16,10 +9,6 @@ from models import User
 from schemas import TokenData
 from security import SECRET_KEY, ALGORITHM
 
-
-# =========================
-# AUTHENTICATION SCHEME
-# =========================
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
@@ -30,9 +19,6 @@ async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Validate JWT token and return the authenticated user.
-    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -52,9 +38,7 @@ async def get_current_user(
     except JWTError as error:
         raise credentials_exception from error
 
-    result = await db.execute(
-        select(User).where(User.email == token_data.email)
-    )
+    result = await db.execute(select(User).where(User.email == token_data.email))
     user = result.scalars().first()
 
     if user is None:
@@ -67,11 +51,9 @@ async def get_current_user(
 # ROLE-BASED ACCESS CONTROL
 # =========================
 def require_role(required_role: str):
-    """
-    Dependency factory to enforce role-based access control.
-    """
+  
 
-    def role_checker(current_user: User = Depends(get_current_user)):
+    async def role_checker(current_user: User = Depends(get_current_user)):
         if required_role not in current_user.roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -79,11 +61,11 @@ def require_role(required_role: str):
             )
         return current_user
 
-    return role_checker
+    return Depends(role_checker)  
 
 
 # =========================
-# PRE-CONFIGURED ROLE DEPENDENCIES
+# PRE-DEFINED ROLE DEPENDENCIES
 # =========================
-require_admin = Depends(require_role("Administrator"))
-require_developer = Depends(require_role("Developer"))
+RequireAdmin = require_role("Administrator")   
+RequireDeveloper = require_role("Developer")

@@ -1,4 +1,15 @@
-import { useState, useEffect } from "react";
+/**
+ * File: AdminDashboard.tsx
+ * Author: Hiba Noor
+ *
+ * Purpose:
+ *   Renders the Admin Dashboard of BizBot, providing an overview
+ *   of system analytics, user management, and platform activity.
+ *   Includes metrics, charts, and tools for monitoring users,
+ *   system health, and automation performance.
+ */
+
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -47,9 +58,25 @@ import {
   Legend,
 } from "recharts";
 import BotIcon from "@/components/ui/BotIcon";
-import api from "@/lib/api"; // Import API client
+import api from "@/lib/api";
 
-// --- Mock Data ---
+// -------------------------
+// Types
+// -------------------------
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  company: string;
+  status: "active" | "inactive" | "pending" | string;
+  lastLogin: string;
+  workflows: number;
+  isReal?: boolean;
+}
+
+// -------------------------
+// Mock Data
+// -------------------------
 const userGrowthData = [
   { month: "Jan", users: 120 },
   { month: "Feb", users: 180 },
@@ -76,12 +103,11 @@ const automationVolumeData = [
   { day: "Sun", workflows: 85 },
 ];
 
-// Existing Dummy Users
-const mockUsers = [
+const mockUsers: User[] = [
   {
     id: "user-1",
-    name: "John Doe",
-    email: "john.doe@acme.com",
+    name: "Sajeela Safder",
+    email: "sajeela.safder@acme.com",
     company: "Acme Inc.",
     status: "active",
     lastLogin: "2 hours ago",
@@ -89,8 +115,8 @@ const mockUsers = [
   },
   {
     id: "user-2",
-    name: "Sarah Johnson",
-    email: "sarah.j@techcorp.io",
+    name: "Sarah Ahmad",
+    email: "sarah.a@techcorp.io",
     company: "TechCorp",
     status: "active",
     lastLogin: "5 hours ago",
@@ -98,8 +124,8 @@ const mockUsers = [
   },
   {
     id: "user-3",
-    name: "Michael Chen",
-    email: "m.chen@innovate.co",
+    name: "Muhammed Ali",
+    email: "m.ali@innovate.co",
     company: "Innovate Co",
     status: "inactive",
     lastLogin: "3 days ago",
@@ -107,45 +133,112 @@ const mockUsers = [
   },
 ];
 
+// -------------------------
+// Components
+// -------------------------
+const StatusBadge = ({ status }: { status: string }) => {
+  switch (status) {
+    case "active":
+      return (
+        <Badge className="bg-success/10 text-success border-success/20">
+          Active
+        </Badge>
+      );
+    case "inactive":
+      return <Badge variant="secondary">Inactive</Badge>;
+    case "pending":
+      return (
+        <Badge className="bg-warning/10 text-warning border-warning/20">
+          Pending
+        </Badge>
+      );
+    default:
+      return <Badge variant="outline">{status}</Badge>;
+  }
+};
+
+const MetricCard = ({ metric, index }: { metric: any; index: number }) => (
+  <motion.div
+    key={metric.title}
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: index * 0.1 }}
+    className="card-elevated p-6"
+  >
+    <div className="flex items-start justify-between mb-4">
+      <div className={`p-3 rounded-lg ${metric.bgColor}`}>
+        <metric.icon className={`w-5 h-5 ${metric.color}`} />
+      </div>
+      <span className="text-sm font-medium text-success flex items-center gap-1">
+        <TrendingUp className="w-3 h-3" />
+        {metric.change}
+      </span>
+    </div>
+    <h3 className="text-sm text-muted-foreground mb-1">{metric.title}</h3>
+    <p className="text-2xl font-bold text-foreground">{metric.value}</p>
+  </motion.div>
+);
+
+const ChartCard = ({
+  title,
+  delay = 0,
+  children,
+}: {
+  title: string;
+  delay?: number;
+  children: React.ReactNode;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay }}
+    className="card-elevated p-6"
+  >
+    <h3 className="text-lg font-semibold text-foreground mb-4">{title}</h3>
+    {children}
+  </motion.div>
+);
+
+// -------------------------
+// Main Dashboard Component
+// -------------------------
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [allUsers, setAllUsers] = useState<any[]>(mockUsers); // Start with mocks
+  const [allUsers, setAllUsers] = useState<User[]>(mockUsers);
 
-  // --- NEW: Fetch Real Users ---
+  // Fetch real users
   useEffect(() => {
     const fetchRealUsers = async () => {
       try {
         const response = await api.get("/api/users/");
-        
-        // Transform API data to match table structure
-        const realUsers = response.data.map((u: any) => ({
-          id: u.id.toString(), // Ensure ID is string for consistency
+        const realUsers: User[] = response.data.map((u: any) => ({
+          id: u.id.toString(),
           name: u.username,
           email: u.email,
-          company: u.company || "Individual User", // Fallback if empty
+          company: u.company || "Individual User",
           status: u.is_active ? "active" : "inactive",
-          lastLogin: new Date(u.created_at).toLocaleDateString(), // Use creation date for now
-          workflows: 0, // Placeholder as we don't have this count yet
-          isReal: true // Flag to identify real users if needed
+          lastLogin: new Date(u.created_at).toLocaleDateString(),
+          workflows: 0,
+          isReal: true,
         }));
-
-        // Combine Mock + Real (Filter out potential duplicates if needed)
         setAllUsers([...mockUsers, ...realUsers]);
-        
       } catch (error) {
         console.error("Failed to fetch real users", error);
       }
     };
-
     fetchRealUsers();
   }, []);
 
-  const filteredUsers = allUsers.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.company.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = useMemo(
+    () =>
+      allUsers.filter(
+        (user) =>
+          user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user.company.toLowerCase().includes(searchQuery.toLowerCase()),
+      ),
+    [allUsers, searchQuery],
   );
 
   const handleLogout = () => {
@@ -153,24 +246,10 @@ const AdminDashboard = () => {
     navigate("/login");
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "active":
-        return <Badge className="bg-success/10 text-success border-success/20">Active</Badge>;
-      case "inactive":
-        return <Badge variant="secondary">Inactive</Badge>;
-      case "pending":
-        return <Badge className="bg-warning/10 text-warning border-warning/20">Pending</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
-
-  // Update metrics based on real data count
   const metricCards = [
     {
       title: "Total Users",
-      value: allUsers.length.toString(), // Dynamic count
+      value: allUsers.length.toString(),
       change: "+12%",
       icon: Users,
       color: "text-primary",
@@ -224,16 +303,14 @@ const AdminDashboard = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="gap-2 hidden sm:flex"
               onClick={() => navigate("/admin/contacts")}
             >
-              <Mail className="w-4 h-4" />
-              Contact Messages
+              <Mail className="w-4 h-4" /> Contact Messages
             </Button>
-
             <BotIcon size="sm" animated={false} />
             <span className="text-sm font-medium text-muted-foreground hidden sm:block">
               Mission Control
@@ -245,8 +322,7 @@ const AdminDashboard = () => {
               onClick={handleLogout}
               className="text-muted-foreground hover:text-foreground"
             >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
+              <LogOut className="w-4 h-4 mr-2" /> Logout
             </Button>
           </div>
         </div>
@@ -257,158 +333,113 @@ const AdminDashboard = () => {
         {/* Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {metricCards.map((metric, index) => (
-            <motion.div
-              key={metric.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="card-elevated p-6"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className={`p-3 rounded-lg ${metric.bgColor}`}>
-                  <metric.icon className={`w-5 h-5 ${metric.color}`} />
-                </div>
-                <span className="text-sm font-medium text-success flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3" />
-                  {metric.change}
-                </span>
-              </div>
-              <h3 className="text-sm text-muted-foreground mb-1">
-                {metric.title}
-              </h3>
-              <p className="text-2xl font-bold text-foreground">{metric.value}</p>
-            </motion.div>
+            <MetricCard key={metric.title} metric={metric} index={index} />
           ))}
         </div>
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {/* User Growth Line Chart */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="card-elevated p-6 lg:col-span-1"
-          >
-            <h3 className="text-lg font-semibold text-foreground mb-4">
-              User Growth
-            </h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={userGrowthData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis
-                    dataKey="month"
-                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
-                    axisLine={{ stroke: "hsl(var(--border))" }}
-                  />
-                  <YAxis
-                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
-                    axisLine={{ stroke: "hsl(var(--border))" }}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                    }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="users"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth={3}
-                    dot={{ fill: "hsl(var(--primary))", strokeWidth: 2 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
+          <ChartCard title="User Growth" delay={0.4}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={userGrowthData}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="hsl(var(--border))"
+                />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                  axisLine={{ stroke: "hsl(var(--border))" }}
+                />
+                <YAxis
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                  axisLine={{ stroke: "hsl(var(--border))" }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "8px",
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="users"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={3}
+                  dot={{ fill: "hsl(var(--primary))", strokeWidth: 2 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartCard>
 
-          {/* System Health Pie Chart */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="card-elevated p-6"
-          >
-            <h3 className="text-lg font-semibold text-foreground mb-4">
-              System Health
-            </h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={systemHealthData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {systemHealthData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                    }}
-                  />
-                  <Legend
-                    verticalAlign="bottom"
-                    height={36}
-                    formatter={(value) => (
-                      <span className="text-muted-foreground text-sm">{value}</span>
-                    )}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
+          <ChartCard title="System Health" delay={0.5}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={systemHealthData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {systemHealthData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "8px",
+                  }}
+                />
+                <Legend
+                  verticalAlign="bottom"
+                  height={36}
+                  formatter={(value) => (
+                    <span className="text-muted-foreground text-sm">
+                      {value}
+                    </span>
+                  )}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </ChartCard>
 
-          {/* Automation Volume Bar Chart */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="card-elevated p-6"
-          >
-            <h3 className="text-lg font-semibold text-foreground mb-4">
-              Automation Volume
-            </h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={automationVolumeData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis
-                    dataKey="day"
-                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
-                    axisLine={{ stroke: "hsl(var(--border))" }}
-                  />
-                  <YAxis
-                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
-                    axisLine={{ stroke: "hsl(var(--border))" }}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                    }}
-                  />
-                  <Bar
-                    dataKey="workflows"
-                    fill="hsl(var(--workflow))"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
+          <ChartCard title="Automation Volume" delay={0.6}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={automationVolumeData}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="hsl(var(--border))"
+                />
+                <XAxis
+                  dataKey="day"
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                  axisLine={{ stroke: "hsl(var(--border))" }}
+                />
+                <YAxis
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                  axisLine={{ stroke: "hsl(var(--border))" }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "8px",
+                  }}
+                />
+                <Bar
+                  dataKey="workflows"
+                  fill="hsl(var(--workflow))"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
         </div>
 
         {/* User Management Table */}
@@ -418,20 +449,18 @@ const AdminDashboard = () => {
           transition={{ delay: 0.7 }}
           className="card-elevated"
         >
-          <div className="p-6 border-b border-border">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <h3 className="text-lg font-semibold text-foreground">
-                User Management
-              </h3>
-              <div className="relative w-full sm:w-72">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search users..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
+          <div className="p-6 border-b border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <h3 className="text-lg font-semibold text-foreground">
+              User Management
+            </h3>
+            <div className="relative w-full sm:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search users..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
             </div>
           </div>
 
@@ -441,14 +470,22 @@ const AdminDashboard = () => {
                 <TableHead>User</TableHead>
                 <TableHead className="hidden md:table-cell">Company</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="hidden sm:table-cell">Joined / Last Login</TableHead>
-                <TableHead className="hidden lg:table-cell">Workflows</TableHead>
+                <TableHead className="hidden sm:table-cell">
+                  Joined / Last Login
+                </TableHead>
+                <TableHead className="hidden lg:table-cell">
+                  Workflows
+                </TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
+
             <TableBody>
               {filteredUsers.map((user) => (
-                <TableRow key={user.id} className="cursor-pointer hover:bg-accent/50">
+                <TableRow
+                  key={user.id}
+                  className="cursor-pointer hover:bg-accent/50"
+                >
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-9 w-9">
@@ -456,19 +493,28 @@ const AdminDashboard = () => {
                           src={`https://ui-avatars.com/api/?name=${user.name.replace(" ", "+")}&background=6366f1&color=fff`}
                         />
                         <AvatarFallback>
-                          {user.name.split(" ").map((n: string) => n[0]).join("")}
+                          {user.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium text-foreground">{user.name}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                        <p className="font-medium text-foreground">
+                          {user.name}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {user.email}
+                        </p>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell className="hidden md:table-cell text-muted-foreground">
                     {user.company}
                   </TableCell>
-                  <TableCell>{getStatusBadge(user.status)}</TableCell>
+                  <TableCell>
+                    <StatusBadge status={user.status} />
+                  </TableCell>
                   <TableCell className="hidden sm:table-cell text-muted-foreground">
                     {user.lastLogin}
                   </TableCell>
@@ -486,8 +532,7 @@ const AdminDashboard = () => {
                         <DropdownMenuItem
                           onClick={() => navigate(`/admin/user/${user.id}`)}
                         >
-                          <ChevronRight className="w-4 h-4 mr-2" />
-                          Manage User
+                          <ChevronRight className="w-4 h-4 mr-2" /> Manage User
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

@@ -301,7 +301,8 @@ const SocialMediaStudio = () => {
 
               {isGenerating && (
                 <div className="flex flex-col items-center justify-center py-16">
-                  <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
+                  <Loader2 className="w-10 h-10 text-[#1E2361] animate-spin mb-4" />
+
                   <p className="text-muted-foreground">
                     AI Generating Visuals: 90%
                   </p>
@@ -320,7 +321,10 @@ const SocialMediaStudio = () => {
 
                   <div className="space-y-4">
                     {generatedContent.posts.map((post, index) => (
-                      <div key={index} className="p-4 bg-accent/50 rounded-lg">
+                      <div
+                        key={index}
+                        className="p-4 bg-[#d6d9f5]/50 rounded-lg"
+                      >
                         <div className="flex items-center justify-between mb-2">
                           <div
                             className={`flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r ${getPlatformColor(post.platform)} text-white text-xs font-medium`}
@@ -348,7 +352,7 @@ const SocialMediaStudio = () => {
                           {post.hashtags.map((tag, i) => (
                             <span
                               key={i}
-                              className="text-xs text-primary font-medium"
+                              className="text-xs text-[#1E2361] font-medium"
                             >
                               {tag}
                             </span>
@@ -362,7 +366,7 @@ const SocialMediaStudio = () => {
 
               {!isGenerating && !generatedContent && (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <Palette className="w-12 h-12 text-muted-foreground/50 mb-4" />
+                  <Palette className="w-12 h-12 text-[#1E2361]/30 mb-4" />
                   <p className="text-muted-foreground">
                     Enter a topic and generate content to see results here
                   </p>
@@ -387,7 +391,7 @@ const SocialMediaStudio = () => {
 
               {scheduledPosts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <Calendar className="w-12 h-12 text-muted-foreground/50 mb-4" />
+                  <Calendar className="w-12 h-12 text-[#1E2361]/30 mb-4" />
                   <p className="text-muted-foreground">
                     No scheduled posts yet
                   </p>
@@ -461,7 +465,7 @@ const SocialMediaStudio = () => {
             <Button
               onClick={handleSchedulePost}
               disabled={!selectedDate}
-              className="bg-gradient-to-r from-social to-social/80"
+              className="bg-gradient-to-r from-[#1E2361] to-[#3a3f7d] text-white"
             >
               {selectedDate
                 ? `Schedule for ${selectedDate.toLocaleDateString()}`

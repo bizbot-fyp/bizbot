@@ -2,8 +2,8 @@
  * File: AboutUs.tsx
  * Author: Areeba Abdullah
  *
- * Purpose: Renders the About Us page of BizBot, showcasing company information, 
- * core values, team members, and call-to-action sections.
+ * Purpose: Renders the About Us page of BizBot, showcasing company information,
+ * core values, team members, and call-to-action sections with updated brand color #1E2361.
  */
 
 import { motion } from "framer-motion";
@@ -117,7 +117,11 @@ const AboutUs = () => {
             <Link to="/contact">
               <Button variant="ghost">Contact</Button>
             </Link>
-            <Button onClick={handleGoBack} variant="default" className="gap-2">
+            <Button
+              onClick={handleGoBack}
+              variant="default"
+              className="gap-2 bg-[#1E2361] hover:bg-[#1E2361]/90 text-white"
+            >
               <ArrowLeft className="w-4 h-4" />
               Go Back
             </Button>
@@ -126,7 +130,7 @@ const AboutUs = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-b from-primary/5 to-background">
+      <section className="py-20 bg-gradient-to-b from-[#1E2361]/10 to-background">
         <div className="container mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -135,7 +139,7 @@ const AboutUs = () => {
             className="text-center max-w-3xl mx-auto"
           >
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-              About <span className="text-primary">BizBot</span>
+              About <span className="text-[#1E2361]">BizBot</span>
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
               We're on a mission to revolutionize how businesses operate by
@@ -164,7 +168,7 @@ const AboutUs = () => {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="text-center"
               >
-                <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
+                <div className="text-3xl md:text-4xl font-bold text-[#1E2361] mb-2">
                   {stat.value}
                 </div>
                 <div className="text-muted-foreground">{stat.label}</div>
@@ -199,10 +203,10 @@ const AboutUs = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Card className="h-full border-border/50 hover:border-primary/30 transition-colors">
+                <Card className="h-full border-border/50 hover:border-[#1E2361]/40 transition-colors">
                   <CardContent className="p-6 text-center">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                      <value.icon className="w-6 h-6 text-primary" />
+                    <div className="w-12 h-12 rounded-xl bg-[#1E2361]/10 flex items-center justify-center mx-auto mb-4">
+                      <value.icon className="w-6 h-6 text-[#1E2361]" />
                     </div>
                     <h3 className="font-semibold text-foreground mb-2">
                       {value.title}
@@ -243,12 +247,12 @@ const AboutUs = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Card className="border-border/50 hover:border-primary/30 hover:shadow-lg transition-all duration-300">
+                <Card className="border-border/50 hover:border-[#1E2361]/30 hover:shadow-lg transition-all duration-300">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-4">
-                      <Avatar className="w-16 h-16 border-2 border-primary/20">
+                      <Avatar className="w-16 h-16 border-2 border-[#1E2361]/20">
                         <AvatarImage src={member.avatar} alt={member.name} />
-                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                        <AvatarFallback className="bg-[#1E2361]/10 text-[#1E2361] font-semibold">
                           {member.initials}
                         </AvatarFallback>
                       </Avatar>
@@ -256,7 +260,7 @@ const AboutUs = () => {
                         <h3 className="font-semibold text-foreground">
                           {member.name}
                         </h3>
-                        <p className="text-sm text-primary font-medium">
+                        <p className="text-sm text-[#1E2361] font-medium">
                           {member.role}
                         </p>
                         <p className="text-sm text-muted-foreground mt-1">
@@ -265,10 +269,18 @@ const AboutUs = () => {
                       </div>
                     </div>
                     <div className="flex gap-2 mt-4 pt-4 border-t border-border/50">
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover:text-[#1E2361] hover:bg-[#1E2361]/10"
+                      >
                         <Linkedin className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover:text-[#1E2361] hover:bg-[#1E2361]/10"
+                      >
                         <Twitter className="w-4 h-4" />
                       </Button>
                     </div>
@@ -300,7 +312,7 @@ const AboutUs = () => {
               <Button
                 size="lg"
                 onClick={handleGoBack}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto bg-[#1E2361] hover:bg-[#1E2361]/90 text-white"
               >
                 Go Back
               </Button>
@@ -308,7 +320,7 @@ const AboutUs = () => {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto border-[#1E2361] text-[#1E2361] hover:bg-[#1E2361]/10"
                 >
                   Contact Sales
                 </Button>

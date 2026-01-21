@@ -1,9 +1,15 @@
 /**
  * File: Dashboard.tsx
- * Author: Areeba Abdullah
+ * Author: Hiba Noor
  *
- * Purpose: Renders the BizBot dashboard, displaying real-time metrics,
- *          automation service cards, and user profile information.
+ * Purpose:
+ *   Renders the BizBot dashboard, displaying real-time metrics,
+ *   automation service cards, and user profile information.
+ *   - Fetches user profile on mount
+ *   - Shows automation service cards with metrics, charts, and actions
+ *   - Displays real-time performance metrics
+ *   - Header with notifications, profile, logout
+ *   - Footer with company info, quick links, and contact details
  */
 
 import { useState, useEffect } from "react";
@@ -24,6 +30,7 @@ import {
   Phone,
   MapPin,
 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import BotIcon from "@/components/ui/BotIcon";
@@ -36,7 +43,6 @@ interface DashboardProps {
 const Dashboard = ({ isAuthenticated }: DashboardProps) => {
   const navigate = useNavigate();
 
-  // State for User Profile
   const [currentUser, setCurrentUser] = useState({
     name: "User",
     avatar: "",
@@ -48,7 +54,6 @@ const Dashboard = ({ isAuthenticated }: DashboardProps) => {
     successRate: 98,
   });
 
-  // Fetch User Data on Mount
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -62,9 +67,7 @@ const Dashboard = ({ isAuthenticated }: DashboardProps) => {
       }
     };
 
-    if (isAuthenticated) {
-      fetchUserProfile();
-    }
+    if (isAuthenticated) fetchUserProfile();
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -170,7 +173,7 @@ const Dashboard = ({ isAuthenticated }: DashboardProps) => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* ---------------- Header ---------------- */}
       <header className="sticky top-0 z-50 bg-card/95 backdrop-blur border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -228,104 +231,102 @@ const Dashboard = ({ isAuthenticated }: DashboardProps) => {
         </div>
       </header>
 
+      {/* ---------------- Main Content ---------------- */}
       <main className="container mx-auto px-4 py-8">
+        {/* Automation Service Cards */}
         <section className="mb-12">
           <h2 className="text-xl font-semibold text-foreground mb-6">
             Automation Services
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featureCards.map((card, index) => (
-              <motion.div
-                key={card.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="card-elevated-hover overflow-hidden"
-              >
-                <div className={`h-2 bg-gradient-to-r ${card.gradient}`} />
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div
-                      className={`p-3 rounded-lg bg-gradient-to-br ${card.gradient}`}
-                    >
-                      <card.icon className="w-6 h-6 text-white" />
-                    </div>
-                  </div>
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  {featureCards.map((card, index) => (
+    <motion.div
+      key={card.title}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: index * 0.1 }}
+      className="card-elevated-hover overflow-hidden flex flex-col"
+    >
+      {/* Card top gradient */}
+      <div className={`h-2 bg-gradient-to-r ${card.gradient}`} />
 
-                  <h3 className="text-lg font-semibold text-foreground mb-4">
-                    {card.title}
-                  </h3>
+      <div className="p-6 flex flex-col flex-1">
+        {/* Card Icon */}
+        <div className="flex items-start justify-between mb-4">
+          <div className={`p-3 rounded-lg bg-gradient-to-br ${card.gradient}`}>
+            <card.icon className="w-6 h-6 text-white" />
+          </div>
+        </div>
 
-                  <div className="mb-4">
-                    <div className="text-3xl font-bold text-foreground">
-                      {card.metric}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {card.metricLabel}
-                    </div>
-                  </div>
+        {/* Card Content */}
+        <h3 className="text-lg font-semibold text-[#1E2361] mb-4">
+          {card.title}
+        </h3>
 
-                  {card.chartData && (
-                    <div className="flex items-end gap-1 h-12 mb-4">
-                      {card.chartData.map((height, i) => (
-                        <div
-                          key={i}
-                          className={`flex-1 bg-gradient-to-t ${card.gradient} rounded-t opacity-70`}
-                          style={{ height: `${height}%` }}
-                        />
-                      ))}
-                    </div>
-                  )}
+        <div className="mb-4">
+          <div className="text-3xl font-bold text-[#1E2361]">{card.metric}</div>
+          <div className="text-sm text-muted-foreground">{card.metricLabel}</div>
+        </div>
 
-                  {card.platforms && (
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {card.platforms.map((platform) => (
-                        <span
-                          key={platform}
-                          className="px-2 py-1 text-xs font-medium bg-accent text-accent-foreground rounded-md"
-                        >
-                          {platform}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {card.workflows && (
-                    <div className="space-y-2 mb-4">
-                      {card.workflows.map((wf) => (
-                        <div
-                          key={wf.name}
-                          className="flex items-center gap-2 text-sm"
-                        >
-                          <div
-                            className={`w-2 h-2 rounded-full ${
-                              wf.active ? "bg-success" : "bg-muted"
-                            }`}
-                          />
-                          <span className="text-muted-foreground">
-                            {wf.name}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <Button
-                    onClick={card.action}
-                    variant="ghost"
-                    className="w-full justify-between text-primary hover:text-primary hover:bg-accent"
-                  >
-                    {card.actionLabel}
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </div>
-              </motion.div>
+        {/* Optional Charts */}
+        {card.chartData && (
+          <div className="flex items-end gap-1 h-12 mb-4">
+            {card.chartData.map((height, i) => (
+              <div
+                key={i}
+                className={`flex-1 bg-gradient-to-t ${card.gradient} rounded-t opacity-70`}
+                style={{ height: `${height}%` }}
+              />
             ))}
           </div>
+        )}
+
+        {/* Optional Platforms */}
+        {card.platforms && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {card.platforms.map((platform) => (
+              <span
+                key={platform}
+                className="px-2 py-1 text-xs font-medium bg-accent text-accent-foreground rounded-md"
+              >
+                {platform}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Optional Workflows */}
+        {card.workflows && (
+          <div className="space-y-2 mb-4">
+            {card.workflows.map((wf) => (
+              <div key={wf.name} className="flex items-center gap-2 text-sm">
+                <div
+                  className={`w-2 h-2 rounded-full ${wf.active ? "bg-success" : "bg-muted"}`}
+                />
+                <span className="text-muted-foreground">{wf.name}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        
+       <Button
+  onClick={card.action}
+  variant="ghost"
+  className="w-full justify-between text-[#1E2361] bg-gradient-to-r from-[#F8FAFC] to-[#F1F5F9] hover:from-[#F1F5F9] hover:to-[#E2E8F0] border border-slate-200 mt-auto"
+>
+  {card.actionLabel}
+  <ArrowRight className="w-4 h-4 ml-2" />
+</Button>
+      </div>
+    </motion.div>
+  ))}
+</div>
+
         </section>
 
-        {/* Metrics Section */}
+        {/* Real-time Metrics Section */}
         <section className="mb-12">
           <h2 className="text-xl font-semibold text-foreground mb-6">
             Real-time Performance Metrics
@@ -358,9 +359,7 @@ const Dashboard = ({ isAuthenticated }: DashboardProps) => {
 
                 <div className="flex items-center gap-1 text-sm">
                   <TrendingUp
-                    className={`w-4 h-4 ${
-                      metric.positive ? "text-success" : "text-destructive"
-                    }`}
+                    className={`w-4 h-4 ${metric.positive ? "text-success" : "text-destructive"}`}
                   />
                   <span
                     className={
@@ -376,7 +375,7 @@ const Dashboard = ({ isAuthenticated }: DashboardProps) => {
         </section>
       </main>
 
-      {/* Footer */}
+      {/* ---------------- Footer ---------------- */}
       <footer className="bg-card border-t border-border mt-12">
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -436,16 +435,14 @@ const Dashboard = ({ isAuthenticated }: DashboardProps) => {
               <h4 className="font-semibold text-foreground mb-4">Contact Us</h4>
               <ul className="space-y-3">
                 <li className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Mail className="w-4 h-4" />
-                  support@bizbot.ai
+                  <Mail className="w-4 h-4" /> support@bizbot.ai
                 </li>
                 <li className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Phone className="w-4 h-4" />
-                  +1 (234) 567-8900
+                  <Phone className="w-4 h-4" /> +1 (234) 567-8900
                 </li>
                 <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <MapPin className="w-4 h-4 mt-0.5" />
-                  123 Innovation Drive, Tech Valley, CA 94025
+                  <MapPin className="w-4 h-4 mt-0.5" /> 123 Innovation Drive,
+                  Tech Valley, CA 94025
                 </li>
               </ul>
             </div>

@@ -8,10 +8,9 @@ interface NavLinkCompatProps extends Omit<NavLinkProps, "className"> {
   pendingClassName?: string;
 }
 
-interface interfa{
-  hello?: string
+interface interfa {
+  hello?: string;
 }
-
 
 const NavLink = forwardRef<HTMLAnchorElement, NavLinkCompatProps>(
   ({ className, activeClassName, pendingClassName, to, ...props }, ref) => {
@@ -20,7 +19,11 @@ const NavLink = forwardRef<HTMLAnchorElement, NavLinkCompatProps>(
         ref={ref}
         to={to}
         className={({ isActive, isPending }) =>
-          cn(className, isActive && activeClassName, isPending && pendingClassName)
+          cn(
+            className,
+            isActive && activeClassName,
+            isPending && pendingClassName,
+          )
         }
         {...props}
       />
@@ -29,6 +32,5 @@ const NavLink = forwardRef<HTMLAnchorElement, NavLinkCompatProps>(
 );
 
 NavLink.displayName = "NavLink";
-
 
 export { NavLink };

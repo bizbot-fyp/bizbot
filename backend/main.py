@@ -15,7 +15,7 @@ from sqlalchemy import select
 import models
 import security
 import deps
-from database import Base, engine, session_local
+from database import Base, ENGINE as engine, SessionLocal as session_local
 from routers import auth, contact, users
 
 
@@ -122,7 +122,7 @@ async def get_dashboard_data(
 
 @app.get("/api/admin/system-health")
 async def get_system_health(
-    user: models.User = deps.require_admin,
+    user: models.User = deps.RequireAdmin,
 ):
     """
     Return basic system health information for administrators.

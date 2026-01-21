@@ -1,3 +1,14 @@
+/**
+ * File: AdminUserDetail.tsx
+ * Author: Hiba Noor
+ *
+ * Purpose:
+ *   Renders the detailed view for a specific user in BizBot Admin Dashboard.
+ *   Allows admin to view user info, manage workflows, and perform actions
+ *   such as editing, pausing, or deleting workflows. Includes mock data
+ *   for demonstration; real user data would be fetched via API in production.
+ */
+
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -32,13 +43,46 @@ import { useToast } from "@/hooks/use-toast";
 import BotIcon from "@/components/ui/BotIcon";
 
 // Mock user data (in real app would fetch based on ID)
-const mockUserData: Record<string, { name: string; email: string; company: string; status: string }> = {
-  "user-1": { name: "John Doe", email: "john.doe@acme.com", company: "Acme Inc.", status: "active" },
-  "user-2": { name: "Sarah Johnson", email: "sarah.j@techcorp.io", company: "TechCorp", status: "active" },
-  "user-3": { name: "Michael Chen", email: "m.chen@innovate.co", company: "Innovate Co", status: "inactive" },
-  "user-4": { name: "Emily Davis", email: "emily.d@startup.io", company: "StartupIO", status: "active" },
-  "user-5": { name: "Alex Thompson", email: "alex.t@enterprise.com", company: "Enterprise Ltd", status: "pending" },
-  "user-6": { name: "Lisa Wang", email: "lisa.wang@globaltech.com", company: "GlobalTech", status: "active" },
+const mockUserData: Record<
+  string,
+  { name: string; email: string; company: string; status: string }
+> = {
+  "user-1": {
+    name: "John Doe",
+    email: "john.doe@acme.com",
+    company: "Acme Inc.",
+    status: "active",
+  },
+  "user-2": {
+    name: "Sarah Johnson",
+    email: "sarah.j@techcorp.io",
+    company: "TechCorp",
+    status: "active",
+  },
+  "user-3": {
+    name: "Michael Chen",
+    email: "m.chen@innovate.co",
+    company: "Innovate Co",
+    status: "inactive",
+  },
+  "user-4": {
+    name: "Emily Davis",
+    email: "emily.d@startup.io",
+    company: "StartupIO",
+    status: "active",
+  },
+  "user-5": {
+    name: "Alex Thompson",
+    email: "alex.t@enterprise.com",
+    company: "Enterprise Ltd",
+    status: "pending",
+  },
+  "user-6": {
+    name: "Lisa Wang",
+    email: "lisa.wang@globaltech.com",
+    company: "GlobalTech",
+    status: "active",
+  },
 };
 
 interface Workflow {
@@ -55,9 +99,15 @@ const AdminUserDetail = () => {
   const { userId } = useParams<{ userId: string }>();
   const { toast } = useToast();
 
-  const userData = userId && mockUserData[userId] 
-    ? mockUserData[userId] 
-    : { name: "Unknown User", email: "unknown@email.com", company: "Unknown", status: "inactive" };
+  const userData =
+    userId && mockUserData[userId]
+      ? mockUserData[userId]
+      : {
+          name: "Unknown User",
+          email: "unknown@email.com",
+          company: "Unknown",
+          status: "inactive",
+        };
 
   const [workflows, setWorkflows] = useState<Workflow[]>([
     {
@@ -99,8 +149,8 @@ const AdminUserDetail = () => {
       prev.map((wf) =>
         wf.id === workflowId
           ? { ...wf, status: wf.status === "active" ? "paused" : "active" }
-          : wf
-      )
+          : wf,
+      ),
     );
     toast({
       title: "Workflow Updated",
@@ -117,7 +167,6 @@ const AdminUserDetail = () => {
   };
 
   const handleEditWorkflow = (workflowId: string) => {
-    // Navigate to WorkflowBuilder in admin mode with context
     navigate(`/workflow-builder?mode=admin&workflowId=${workflowId}`);
   };
 
@@ -141,11 +190,23 @@ const AdminUserDetail = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return <Badge className="bg-success/10 text-success border-success/20">Active</Badge>;
+        return (
+          <Badge className="bg-success/10 text-success border-success/20">
+            Active
+          </Badge>
+        );
       case "paused":
-        return <Badge className="bg-warning/10 text-warning border-warning/20">Paused</Badge>;
+        return (
+          <Badge className="bg-warning/10 text-warning border-warning/20">
+            Paused
+          </Badge>
+        );
       case "error":
-        return <Badge className="bg-destructive/10 text-destructive border-destructive/20">Error</Badge>;
+        return (
+          <Badge className="bg-destructive/10 text-destructive border-destructive/20">
+            Error
+          </Badge>
+        );
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -199,7 +260,10 @@ const AdminUserDetail = () => {
                 src={`https://ui-avatars.com/api/?name=${userData.name.replace(" ", "+")}&background=6366f1&color=fff&size=200`}
               />
               <AvatarFallback className="text-2xl">
-                {userData.name.split(" ").map((n) => n[0]).join("")}
+                {userData.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
@@ -210,19 +274,25 @@ const AdminUserDetail = () => {
               <div className="flex flex-wrap gap-2">
                 <Badge variant="secondary">{userData.company}</Badge>
                 {userData.status === "active" && (
-                  <Badge className="bg-success/10 text-success border-success/20">Active</Badge>
+                  <Badge className="bg-success/10 text-success border-success/20">
+                    Active
+                  </Badge>
                 )}
                 {userData.status === "inactive" && (
                   <Badge variant="secondary">Inactive</Badge>
                 )}
                 {userData.status === "pending" && (
-                  <Badge className="bg-warning/10 text-warning border-warning/20">Pending</Badge>
+                  <Badge className="bg-warning/10 text-warning border-warning/20">
+                    Pending
+                  </Badge>
                 )}
               </div>
             </div>
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Total Workflows</p>
-              <p className="text-3xl font-bold text-foreground">{workflows.length}</p>
+              <p className="text-3xl font-bold text-foreground">
+                {workflows.length}
+              </p>
             </div>
           </div>
         </motion.div>
@@ -276,7 +346,7 @@ const AdminUserDetail = () => {
                 <h4 className="text-lg font-semibold text-foreground mb-2">
                   {workflow.name}
                 </h4>
-                
+
                 <div className="flex items-center gap-2 mb-4">
                   {getStatusBadge(workflow.status)}
                   <Badge variant="outline">{workflow.type}</Badge>
@@ -288,7 +358,10 @@ const AdminUserDetail = () => {
                     {workflow.lastRun}
                   </div>
                   <div>
-                    <span className="font-medium text-foreground">{workflow.runs}</span> runs
+                    <span className="font-medium text-foreground">
+                      {workflow.runs}
+                    </span>{" "}
+                    runs
                   </div>
                 </div>
 
@@ -327,8 +400,9 @@ const AdminUserDetail = () => {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Delete Workflow?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete
-                          the workflow "{workflow.name}" and all its data.
+                          This action cannot be undone. This will permanently
+                          delete the workflow "{workflow.name}" and all its
+                          data.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>

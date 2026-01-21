@@ -1,3 +1,16 @@
+/**
+ * File: WhatsAppSetup.tsx
+ * Author: Hiba Noor
+ *
+ * Description:
+ *   This component renders the WhatsApp AI Setup page for BizBot.
+ *   It allows the user to:
+ *     - Upload company documents (PDF, DOCX)
+ *     - Upload FAQs and knowledge base files (CSV, TXT, XLSX)
+ *     - Start AI training and view a progress bar
+ *     - See a live WhatsApp-style chat preview with sample conversation
+ */
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -50,7 +63,7 @@ const WhatsAppSetup = () => {
 
   const handleFileUpload = (
     type: "company" | "knowledge",
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const files = Array.from(event.target.files || []);
     const newFiles = files.map((file, index) => ({
@@ -297,17 +310,17 @@ const WhatsAppSetup = () => {
               <Button
                 onClick={startTraining}
                 disabled={isTraining}
-                className="w-full h-12 bg-gradient-to-r from-whatsapp to-whatsapp/80 hover:opacity-90 transition-opacity"
+                className="w-full h-12 bg-gradient-to-r from-[#d6d9f5] to-[#bfc3f0] text-[#1E2361] hover:opacity-90 transition-opacity"
               >
                 {isTraining ? (
                   <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin text-[#1E2361]" />
                     Training in Progress...
                   </>
                 ) : (
                   <>
                     Start Training AI
-                    <Sparkles className="w-5 h-5 ml-2" />
+                    <Sparkles className="w-5 h-5 ml-2 text-[#1E2361]" />
                   </>
                 )}
               </Button>
@@ -366,24 +379,22 @@ const WhatsAppSetup = () => {
                       </div>
 
                       {/* WhatsApp Header */}
-                      <div className="bg-whatsapp px-4 py-3 flex items-center gap-3">
-                        <button className="text-whatsapp-foreground">
+                      <div className="bg-[#1E2361] px-4 py-3 flex items-center gap-3">
+                        <button className="text-white">
                           <ArrowLeft className="w-5 h-5" />
                         </button>
                         <div className="flex items-center gap-3 flex-1">
                           <div className="w-10 h-10 rounded-full bg-whatsapp-foreground/20 flex items-center justify-center">
-                            <MessageSquare className="w-5 h-5 text-whatsapp-foreground" />
+                            <MessageSquare className="w-5 h-5 text-white" />
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-whatsapp-foreground">
+                            <p className="text-sm font-semibold text-white">
                               BizBot Support
                             </p>
-                            <p className="text-xs text-whatsapp-foreground/80">
-                              Online
-                            </p>
+                            <p className="text-xs text-white/80">Online</p>
                           </div>
                         </div>
-                        <Search className="w-5 h-5 text-whatsapp-foreground" />
+                        <Search className="w-5 h-5 text-white" />
                       </div>
 
                       {/* Chat Area */}
@@ -461,17 +472,23 @@ const WhatsAppSetup = () => {
 
                   {/* Feature Badges */}
                   <div className="flex flex-wrap justify-center gap-3 mt-6">
-                    <div className="flex items-center gap-2 px-3 py-2 bg-accent rounded-full">
-                      <Sparkles className="w-4 h-4 text-primary" />
+                    <div className="flex items-center gap-2 px-3 py-2 bg-[#d6d9f5] rounded-full text-[#1E2361]">
+                      <Sparkles className="w-4 h-4" />
+
                       <span className="text-xs font-medium">AI-Powered</span>
                     </div>
-                    <div className="flex items-center gap-2 px-3 py-2 bg-accent rounded-full">
+                    <div className="flex items-center gap-2 px-3 py-2 bg-[#d6d9f5] rounded-full text-[#1E2361]">
+                      <Sparkles className="w-4 h-4" />
+
                       <Brain className="w-4 h-4 text-primary" />
                       <span className="text-xs font-medium">Context-Aware</span>
                     </div>
-                    <div className="flex items-center gap-2 px-3 py-2 bg-accent rounded-full">
-                      <Sparkles className="w-4 h-4 text-primary" />
-                      <span className="text-xs font-medium">Instant Replies</span>
+                    <div className="flex items-center gap-2 px-3 py-2 bg-[#d6d9f5] rounded-full text-[#1E2361]">
+                      <Sparkles className="w-4 h-4" />
+
+                      <span className="text-xs font-medium">
+                        Instant Replies
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -492,8 +509,8 @@ const WhatsAppSetup = () => {
               key={feature.title}
               className="card-elevated p-4 flex items-center gap-3"
             >
-              <div className="p-2 rounded-lg bg-primary/10">
-                <feature.icon className="w-5 h-5 text-primary" />
+              <div className="p-2 rounded-lg bg-[#d6d9f5]/20">
+                <feature.icon className="w-5 h-5 text-[#1E2361]" />
               </div>
               <div>
                 <h4 className="text-sm font-semibold text-foreground">

@@ -25,4 +25,5 @@ export default defineConfig(({ mode }) => ({
       include: ['src/**/*.{ts,tsx}'],
       exclude: ['src/components/ui/**', 'src/main.tsx', 'src/vite-env.d.ts'],
     },
+  },
 }));
