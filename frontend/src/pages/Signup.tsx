@@ -1,3 +1,11 @@
+/**
+ * File: Signup.tsx
+ * Author: Areeba Abdullah
+ *
+ * Purpose: Renders the signup page for BizBot, handling user registration,
+ *          form validation, password visibility toggle, and account creation.
+ */
+
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";

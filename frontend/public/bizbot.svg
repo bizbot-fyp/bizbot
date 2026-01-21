@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 72" width="64" height="72">
+  <!-- Body -->
+  <rect x="4" y="8" width="56" height="56" rx="12" ry="12" fill="#232878"></rect>
+  
+  <!-- Antenna -->
+  <line x1="32" y1="4" x2="32" y2="12" stroke="#232878" stroke-width="2"></line>
+  <circle cx="32" cy="4" r="3" fill="#232878"></circle>
+  
+  <!-- Eyes -->
+  <circle cx="20" cy="36" r="6" fill="white"></circle>
+  <circle cx="44" cy="36" r="6" fill="white"></circle>
+</svg>

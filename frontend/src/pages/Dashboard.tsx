@@ -1,3 +1,11 @@
+/**
+ * File: Dashboard.tsx
+ * Author: Areeba Abdullah
+ *
+ * Purpose: Renders the BizBot dashboard, displaying real-time metrics,
+ *          automation service cards, and user profile information.
+ */
+
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -19,7 +27,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import BotIcon from "@/components/ui/BotIcon";
-import api from "@/lib/api"; // Import the API client
+import api from "@/lib/api";
 
 interface DashboardProps {
   isAuthenticated: boolean;
@@ -28,7 +36,7 @@ interface DashboardProps {
 const Dashboard = ({ isAuthenticated }: DashboardProps) => {
   const navigate = useNavigate();
 
-  // --- NEW: State for User Profile ---
+  // State for User Profile
   const [currentUser, setCurrentUser] = useState({
     name: "User",
     avatar: "",
@@ -40,7 +48,7 @@ const Dashboard = ({ isAuthenticated }: DashboardProps) => {
     successRate: 98,
   });
 
-  // --- NEW: Fetch User Data on Mount ---
+  // Fetch User Data on Mount
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -64,13 +72,18 @@ const Dashboard = ({ isAuthenticated }: DashboardProps) => {
       setMetrics((prev) => ({
         systemActivity: Math.min(
           prev.systemActivity + Math.floor(Math.random() * 5),
-          500
+          500,
         ),
         responseTime: Math.max(
-          parseFloat((prev.responseTime + (Math.random() - 0.5) * 0.2).toFixed(1)),
-          0.5
+          parseFloat(
+            (prev.responseTime + (Math.random() - 0.5) * 0.2).toFixed(1),
+          ),
+          0.5,
         ),
-        successRate: Math.min(prev.successRate + (Math.random() - 0.5) * 1, 100),
+        successRate: Math.min(
+          prev.successRate + (Math.random() - 0.5) * 1,
+          100,
+        ),
       }));
     }, 3000);
 
@@ -79,7 +92,6 @@ const Dashboard = ({ isAuthenticated }: DashboardProps) => {
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
-    // Reload to clear state or navigate to login
     window.location.href = "/login";
   };
 
@@ -182,14 +194,13 @@ const Dashboard = ({ isAuthenticated }: DashboardProps) => {
                 Contact
               </Button>
             </Link>
-            
+
             <button className="relative p-2 rounded-lg hover:bg-accent transition-colors">
               <Bell className="w-5 h-5 text-muted-foreground" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full" />
             </button>
 
-            {/* --- UPDATED: Dynamic User Profile Section --- */}
-            <button 
+            <button
               onClick={() => navigate("/profile")}
               className="flex items-center gap-3 hover:opacity-80 transition-opacity"
             >
@@ -199,9 +210,10 @@ const Dashboard = ({ isAuthenticated }: DashboardProps) => {
                   {currentUser.name.slice(0, 2)}
                 </AvatarFallback>
               </Avatar>
-              <span className="hidden sm:block text-sm font-medium">{currentUser.name}</span>
+              <span className="hidden sm:block text-sm font-medium">
+                {currentUser.name}
+              </span>
             </button>
-            {/* --------------------------------------------- */}
 
             <Button
               variant="ghost"
@@ -216,9 +228,7 @@ const Dashboard = ({ isAuthenticated }: DashboardProps) => {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {/* Feature Cards */}
         <section className="mb-12">
           <h2 className="text-xl font-semibold text-foreground mb-6">
             Automation Services
@@ -233,9 +243,7 @@ const Dashboard = ({ isAuthenticated }: DashboardProps) => {
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 className="card-elevated-hover overflow-hidden"
               >
-                <div
-                  className={`h-2 bg-gradient-to-r ${card.gradient}`}
-                />
+                <div className={`h-2 bg-gradient-to-r ${card.gradient}`} />
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div
@@ -258,7 +266,6 @@ const Dashboard = ({ isAuthenticated }: DashboardProps) => {
                     </div>
                   </div>
 
-                  {/* Mini chart or platform tags */}
                   {card.chartData && (
                     <div className="flex items-end gap-1 h-12 mb-4">
                       {card.chartData.map((height, i) => (
@@ -296,7 +303,9 @@ const Dashboard = ({ isAuthenticated }: DashboardProps) => {
                               wf.active ? "bg-success" : "bg-muted"
                             }`}
                           />
-                          <span className="text-muted-foreground">{wf.name}</span>
+                          <span className="text-muted-foreground">
+                            {wf.name}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -391,7 +400,9 @@ const Dashboard = ({ isAuthenticated }: DashboardProps) => {
 
             {/* Quick Links */}
             <div>
-              <h4 className="font-semibold text-foreground mb-4">Quick Links</h4>
+              <h4 className="font-semibold text-foreground mb-4">
+                Quick Links
+              </h4>
               <ul className="space-y-2">
                 <li>
                   <Link

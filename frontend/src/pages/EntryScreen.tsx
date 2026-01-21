@@ -1,3 +1,12 @@
+/**
+ * File: EntryScreen.tsx
+ * Author: Areeba Abdullah
+ *
+ * Purpose: Renders the entry/landing screen for BizBot, displaying
+ *          animated hero text, key features, and authentication
+ *          options including Google, GitHub, and LinkedIn logins.
+ */
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -96,7 +105,6 @@ const EntryScreen = () => {
         />
       </div>
 
-      {/* Left Side - Hero Content */}
       <div className="flex-1 flex flex-col justify-center px-8 lg:px-16 py-12 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,7 +6,6 @@
 
 @layer base {
   :root {
-    /* Professional Indigo/Blue Design System */
     --background: 210 20% 98%;
     --foreground: 222 47% 11%;
 
@@ -16,23 +15,18 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    /* Primary - Deep Indigo */
     --primary: 239 84% 67%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary - Slate */
     --secondary: 214 32% 91%;
     --secondary-foreground: 222 47% 11%;
 
-    /* Muted */
     --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
 
-    /* Accent */
     --accent: 239 84% 97%;
     --accent-foreground: 239 84% 67%;
 
-    /* Destructive */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
@@ -46,39 +40,74 @@
     /* Feature Colors */
     --whatsapp: 142 70% 45%;
     --whatsapp-foreground: 0 0% 100%;
-    
+
     --social: 330 81% 60%;
     --social-foreground: 0 0% 100%;
-    
+
     --workflow: 262 83% 58%;
     --workflow-foreground: 0 0% 100%;
 
     /* Success/Warning/Info */
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
-    
+
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-    
+
     --info: 199 89% 48%;
     --info-foreground: 0 0% 100%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(239 84% 67%) 0%, hsl(262 83% 58%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(239 84% 67%) 0%, hsl(199 89% 48%) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(142 70% 45%) 100%);
-    --gradient-whatsapp: linear-gradient(135deg, hsl(142 70% 45%) 0%, hsl(142 70% 55%) 100%);
-    --gradient-social: linear-gradient(135deg, hsl(330 81% 60%) 0%, hsl(340 75% 65%) 100%);
-    --gradient-workflow: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(280 75% 60%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(210 20% 98%) 0%, hsl(210 20% 96%) 100%);
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(239 84% 67%) 0%,
+      hsl(262 83% 58%) 100%
+    );
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(239 84% 67%) 0%,
+      hsl(199 89% 48%) 100%
+    );
+    --gradient-success: linear-gradient(
+      135deg,
+      hsl(142 76% 36%) 0%,
+      hsl(142 70% 45%) 100%
+    );
+    --gradient-whatsapp: linear-gradient(
+      135deg,
+      hsl(142 70% 45%) 0%,
+      hsl(142 70% 55%) 100%
+    );
+    --gradient-social: linear-gradient(
+      135deg,
+      hsl(330 81% 60%) 0%,
+      hsl(340 75% 65%) 100%
+    );
+    --gradient-workflow: linear-gradient(
+      135deg,
+      hsl(262 83% 58%) 0%,
+      hsl(280 75% 60%) 100%
+    );
+    --gradient-subtle: linear-gradient(
+      180deg,
+      hsl(210 20% 98%) 0%,
+      hsl(210 20% 96%) 100%
+    );
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 hsl(222 47% 11% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(222 47% 11% / 0.1), 0 2px 4px -2px hsl(222 47% 11% / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(222 47% 11% / 0.1), 0 4px 6px -4px hsl(222 47% 11% / 0.1);
-    --shadow-xl: 0 20px 25px -5px hsl(222 47% 11% / 0.1), 0 8px 10px -6px hsl(222 47% 11% / 0.1);
+    --shadow-md:
+      0 4px 6px -1px hsl(222 47% 11% / 0.1),
+      0 2px 4px -2px hsl(222 47% 11% / 0.1);
+    --shadow-lg:
+      0 10px 15px -3px hsl(222 47% 11% / 0.1),
+      0 4px 6px -4px hsl(222 47% 11% / 0.1);
+    --shadow-xl:
+      0 20px 25px -5px hsl(222 47% 11% / 0.1),
+      0 8px 10px -6px hsl(222 47% 11% / 0.1);
     --shadow-glow: 0 0 20px hsl(239 84% 67% / 0.3);
-    --shadow-card: 0 1px 3px 0 hsl(222 47% 11% / 0.1), 0 1px 2px -1px hsl(222 47% 11% / 0.1);
+    --shadow-card:
+      0 1px 3px 0 hsl(222 47% 11% / 0.1), 0 1px 2px -1px hsl(222 47% 11% / 0.1);
 
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
@@ -137,17 +166,18 @@
   }
 
   html {
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
 }
 
 @layer components {
-  /* Professional card styles */
   .card-elevated {
     @apply bg-card rounded-lg border border-border;
     box-shadow: var(--shadow-card);
@@ -187,15 +217,27 @@
 
   /* Metric card gradient overlays */
   .metric-gradient-success {
-    background: linear-gradient(135deg, hsl(142 76% 36% / 0.1) 0%, transparent 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(142 76% 36% / 0.1) 0%,
+      transparent 100%
+    );
   }
 
   .metric-gradient-warning {
-    background: linear-gradient(135deg, hsl(38 92% 50% / 0.1) 0%, transparent 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(38 92% 50% / 0.1) 0%,
+      transparent 100%
+    );
   }
 
   .metric-gradient-info {
-    background: linear-gradient(135deg, hsl(199 89% 48% / 0.1) 0%, transparent 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(199 89% 48% / 0.1) 0%,
+      transparent 100%
+    );
   }
 }
 
@@ -241,13 +283,20 @@
   }
 
   /* Stagger animations */
-  .stagger-1 { animation-delay: 0.1s; }
-  .stagger-2 { animation-delay: 0.2s; }
-  .stagger-3 { animation-delay: 0.3s; }
-  .stagger-4 { animation-delay: 0.4s; }
+  .stagger-1 {
+    animation-delay: 0.1s;
+  }
+  .stagger-2 {
+    animation-delay: 0.2s;
+  }
+  .stagger-3 {
+    animation-delay: 0.3s;
+  }
+  .stagger-4 {
+    animation-delay: 0.4s;
+  }
 }
 
-/* Keyframes */
 @keyframes fadeUp {
   from {
     opacity: 0;
@@ -280,7 +329,8 @@
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) rotate(0deg);
   }
   50% {
@@ -289,10 +339,12 @@
 }
 
 @keyframes typing-cursor {
-  0%, 50% {
+  0%,
+  50% {
     opacity: 1;
   }
-  51%, 100% {
+  51%,
+  100% {
     opacity: 0;
   }
 }

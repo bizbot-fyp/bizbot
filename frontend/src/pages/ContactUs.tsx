@@ -1,29 +1,43 @@
+/**
+ * File: ContactUs.tsx
+ * Author: Areeba Abdullah
+ *
+ * Purpose: Renders the Contact Us page for BizBot, including a contact form,
+ *          WhatsApp support, office hours, and enterprise sales information.
+ */
+
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { 
-  Mail, 
-  Phone, 
-  MapPin, 
-  MessageCircle, 
-  Send, 
-  Clock, 
+import {
+  Mail,
+  Phone,
+  MapPin,
+  MessageCircle,
+  Send,
+  Clock,
   Loader2,
   Building2,
   Headphones,
   ArrowLeft,
-  Smartphone
+  Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import BotIcon from "@/components/ui/BotIcon";
 import { jwtDecode } from "jwt-decode";
-import api from "@/lib/api"; 
+import api from "@/lib/api";
 
 const ContactUs = () => {
   const { toast } = useToast();
@@ -32,14 +46,16 @@ const ContactUs = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    mobile_number: "",   
-    whatsapp_number: "", 
+    mobile_number: "",
+    whatsapp_number: "",
     company: "",
     subject: "",
     message: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -51,31 +67,28 @@ const ContactUs = () => {
     setIsSubmitting(true);
 
     try {
-      // Call Backend API
       await api.post("/api/contact/", formData);
 
       toast({
         title: "Message Sent!",
         description: "We'll get back to you within 24 hours.",
       });
-      
-      // Reset form
-      setFormData({ 
-        name: "", 
-        email: "", 
-        mobile_number: "", 
-        whatsapp_number: "", 
-        company: "", 
-        subject: "", 
-        message: "" 
-      });
 
+      setFormData({
+        name: "",
+        email: "",
+        mobile_number: "",
+        whatsapp_number: "",
+        company: "",
+        subject: "",
+        message: "",
+      });
     } catch (error) {
       console.error("Contact submission error:", error);
       toast({
         title: "Submission Failed",
         description: "Something went wrong. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -84,7 +97,9 @@ const ContactUs = () => {
 
   const handleWhatsAppChat = () => {
     const phoneNumber = "1234567890";
-    const message = encodeURIComponent("Hi! I'm interested in learning more about BizBot's automation solutions.");
+    const message = encodeURIComponent(
+      "Hi! I'm interested in learning more about BizBot's automation solutions.",
+    );
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
   };
 
@@ -159,8 +174,8 @@ const ContactUs = () => {
               Get in <span className="text-primary">Touch</span>
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
-              Have questions about BizBot? We're here to help. Reach out to our team 
-              and we'll get back to you as soon as possible.
+              Have questions about BizBot? We're here to help. Reach out to our
+              team and we'll get back to you as soon as possible.
             </p>
           </motion.div>
         </div>
@@ -180,11 +195,15 @@ const ContactUs = () => {
                 <MessageCircle className="w-6 h-6 text-white" />
               </div>
               <div className="text-left">
-                <p className="font-semibold text-foreground">Chat with us on WhatsApp!</p>
-                <p className="text-sm text-muted-foreground">Get instant support for your queries</p>
+                <p className="font-semibold text-foreground">
+                  Chat with us on WhatsApp!
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Get instant support for your queries
+                </p>
               </div>
             </div>
-            <Button 
+            <Button
               onClick={handleWhatsAppChat}
               className="bg-[#25D366] hover:bg-[#20BD5A] text-white gap-2"
               size="lg"
@@ -212,9 +231,15 @@ const ContactUs = () => {
                     <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
                       <method.icon className="w-6 h-6 text-primary" />
                     </div>
-                    <h3 className="font-semibold text-foreground mb-1">{method.title}</h3>
-                    <p className="text-primary font-medium">{method.description}</p>
-                    <p className="text-sm text-muted-foreground mt-1">{method.subtext}</p>
+                    <h3 className="font-semibold text-foreground mb-1">
+                      {method.title}
+                    </h3>
+                    <p className="text-primary font-medium">
+                      {method.description}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {method.subtext}
+                    </p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -316,14 +341,22 @@ const ContactUs = () => {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="subject">Subject</Label>
-                        <Select onValueChange={(value) => setFormData({ ...formData, subject: value })}>
+                        <Select
+                          onValueChange={(value) =>
+                            setFormData({ ...formData, subject: value })
+                          }
+                        >
                           <SelectTrigger>
                             <SelectValue placeholder="Select a topic" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="sales">Sales Inquiry</SelectItem>
-                            <SelectItem value="support">Technical Support</SelectItem>
-                            <SelectItem value="partnership">Partnership</SelectItem>
+                            <SelectItem value="support">
+                              Technical Support
+                            </SelectItem>
+                            <SelectItem value="partnership">
+                              Partnership
+                            </SelectItem>
                             <SelectItem value="demo">Request a Demo</SelectItem>
                             <SelectItem value="other">Other</SelectItem>
                           </SelectContent>
@@ -345,7 +378,11 @@ const ContactUs = () => {
                       />
                     </div>
 
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={isSubmitting}
+                    >
                       {isSubmitting ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -378,15 +415,19 @@ const ContactUs = () => {
                       <MessageCircle className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-foreground">WhatsApp Support</h3>
-                      <p className="text-sm text-muted-foreground">Fastest response time</p>
+                      <h3 className="font-semibold text-foreground">
+                        WhatsApp Support
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Fastest response time
+                      </p>
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Connect with our team instantly on WhatsApp for quick queries about 
-                    pricing, features, or technical support.
+                    Connect with our team instantly on WhatsApp for quick
+                    queries about pricing, features, or technical support.
                   </p>
-                  <Button 
+                  <Button
                     onClick={handleWhatsAppChat}
                     className="w-full bg-[#25D366] hover:bg-[#20BD5A] text-white gap-2"
                   >
@@ -401,20 +442,30 @@ const ContactUs = () => {
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-4">
                     <Clock className="w-5 h-5 text-primary" />
-                    <h3 className="font-semibold text-foreground">Office Hours</h3>
+                    <h3 className="font-semibold text-foreground">
+                      Office Hours
+                    </h3>
                   </div>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Monday - Friday</span>
-                      <span className="text-foreground font-medium">9:00 AM - 6:00 PM</span>
+                      <span className="text-muted-foreground">
+                        Monday - Friday
+                      </span>
+                      <span className="text-foreground font-medium">
+                        9:00 AM - 6:00 PM
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Saturday</span>
-                      <span className="text-foreground font-medium">10:00 AM - 4:00 PM</span>
+                      <span className="text-foreground font-medium">
+                        10:00 AM - 4:00 PM
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Sunday</span>
-                      <span className="text-foreground font-medium">Closed</span>
+                      <span className="text-foreground font-medium">
+                        Closed
+                      </span>
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground mt-4">
@@ -428,11 +479,13 @@ const ContactUs = () => {
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-4">
                     <Building2 className="w-5 h-5 text-primary" />
-                    <h3 className="font-semibold text-foreground">Enterprise Sales</h3>
+                    <h3 className="font-semibold text-foreground">
+                      Enterprise Sales
+                    </h3>
                   </div>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Looking for a custom solution for your organization? Our enterprise 
-                    team is ready to help.
+                    Looking for a custom solution for your organization? Our
+                    enterprise team is ready to help.
                   </p>
                   <Button variant="outline" className="w-full gap-2">
                     <Headphones className="w-4 h-4" />

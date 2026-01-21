@@ -1,3 +1,11 @@
+/**
+ * File: AboutUs.tsx
+ * Author: Areeba Abdullah
+ *
+ * Purpose: Renders the About Us page of BizBot, showcasing company information, 
+ * core values, team members, and call-to-action sections.
+ */
+
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {

@@ -1,3 +1,12 @@
+/**
+ * File: UserProfile.tsx
+ * Author: Areeba Abdullah
+ *
+ * Purpose: Renders the user account settings page, allowing users to
+ *          manage profile info, change passwords, upload avatars, and
+ *          update notification preferences.
+ */
+
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";

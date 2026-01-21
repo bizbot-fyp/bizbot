@@ -1,3 +1,12 @@
+/**
+ * File: Login.tsx
+ * Author: Areeba Abdullah
+ *
+ * Purpose: Renders the login page for BizBot, handling user authentication
+ *          via email/password and OAuth providers (Google, GitHub, LinkedIn),
+ *          and redirects users based on roles.
+ */
+
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";

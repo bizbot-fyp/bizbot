@@ -1,3 +1,12 @@
+/**
+ * File: SocialMediaStudio.tsx
+ * Author: Areeba Abdullah
+ *
+ * Purpose: Renders the AI-powered social media content studio, allowing
+ *          users to generate, preview, and schedule posts across multiple
+ *          platforms with customizable tone and content calendar integration.
+ */
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -60,7 +69,8 @@ const SocialMediaStudio = () => {
   });
   const [tone, setTone] = useState("excited");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
+  const [generatedContent, setGeneratedContent] =
+    useState<GeneratedContent | null>(null);
   const [scheduledPosts, setScheduledPosts] = useState<ScheduledPost[]>([]);
 
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -81,7 +91,7 @@ const SocialMediaStudio = () => {
     }
 
     const selectedPlatforms = Object.keys(platforms).filter(
-      (p) => platforms[p as keyof Platform]
+      (p) => platforms[p as keyof Platform],
     );
     if (selectedPlatforms.length === 0) {
       alert("Please select at least one platform");
@@ -106,7 +116,11 @@ const SocialMediaStudio = () => {
     }, 2000);
   };
 
-  const generateMockText = (platform: string, topic: string, toneType: string) => {
+  const generateMockText = (
+    platform: string,
+    topic: string,
+    toneType: string,
+  ) => {
     const toneWords: Record<string, string> = {
       excited: "🎉 Get ready for warp speed! Our NEW",
       informative: "📊 Introducing our new",
@@ -124,7 +138,12 @@ const SocialMediaStudio = () => {
   };
 
   const generateHashtags = (topic: string) => {
-    return ["#Innovation", "#LaunchDay", "#UnlimitedData", `#${topic.replace(/\s+/g, "")}`];
+    return [
+      "#Innovation",
+      "#LaunchDay",
+      "#UnlimitedData",
+      `#${topic.replace(/\s+/g, "")}`,
+    ];
   };
 
   const getPlatformIcon = (platform: string) => {
@@ -218,22 +237,24 @@ const SocialMediaStudio = () => {
                 Platforms
               </h3>
               <div className="grid grid-cols-2 gap-3 mb-6">
-                {(Object.keys(platforms) as Array<keyof Platform>).map((platform) => (
-                  <button
-                    key={platform}
-                    onClick={() => handlePlatformToggle(platform)}
-                    className={`flex items-center gap-2 p-3 rounded-lg border transition-all ${
-                      platforms[platform]
-                        ? `bg-gradient-to-r ${getPlatformColor(platform)} text-white border-transparent`
-                        : "bg-card border-border hover:bg-accent"
-                    }`}
-                  >
-                    {getPlatformIcon(platform)}
-                    <span className="text-sm font-medium capitalize">
-                      {platform}
-                    </span>
-                  </button>
-                ))}
+                {(Object.keys(platforms) as Array<keyof Platform>).map(
+                  (platform) => (
+                    <button
+                      key={platform}
+                      onClick={() => handlePlatformToggle(platform)}
+                      className={`flex items-center gap-2 p-3 rounded-lg border transition-all ${
+                        platforms[platform]
+                          ? `bg-gradient-to-r ${getPlatformColor(platform)} text-white border-transparent`
+                          : "bg-card border-border hover:bg-accent"
+                      }`}
+                    >
+                      {getPlatformIcon(platform)}
+                      <span className="text-sm font-medium capitalize">
+                        {platform}
+                      </span>
+                    </button>
+                  ),
+                )}
               </div>
 
               <h3 className="text-sm font-medium text-foreground mb-3">
@@ -299,10 +320,7 @@ const SocialMediaStudio = () => {
 
                   <div className="space-y-4">
                     {generatedContent.posts.map((post, index) => (
-                      <div
-                        key={index}
-                        className="p-4 bg-accent/50 rounded-lg"
-                      >
+                      <div key={index} className="p-4 bg-accent/50 rounded-lg">
                         <div className="flex items-center justify-between mb-2">
                           <div
                             className={`flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r ${getPlatformColor(post.platform)} text-white text-xs font-medium`}
@@ -370,7 +388,9 @@ const SocialMediaStudio = () => {
               {scheduledPosts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <Calendar className="w-12 h-12 text-muted-foreground/50 mb-4" />
-                  <p className="text-muted-foreground">No scheduled posts yet</p>
+                  <p className="text-muted-foreground">
+                    No scheduled posts yet
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-3">
