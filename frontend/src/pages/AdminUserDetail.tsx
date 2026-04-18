@@ -151,7 +151,7 @@ useEffect(() => {
   };
 
   fetchWorkflows();
-}, [numericUserId, toast]); // This already runs when numericUserId changes
+}, [numericUserId, toast]); 
 
   // ─── Toggle active ↔ paused via PATCH /workflows/{id}/status ──────────────
   const handleToggleWorkflow = async (workflowId: number, currentStatus: string) => {

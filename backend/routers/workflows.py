@@ -1,5 +1,18 @@
-# routers/workflows.py - COMPLETE FIXED VERSION
+"""
+File: workflows.py
+Author: Hiba Noor
 
+Purpose:
+    Provides API endpoints for managing workflows in the BizBot system.
+    This module handles creation, retrieval, updating, and deletion of workflows,
+    along with status management.
+
+    Features:
+    - Create new workflows with triggers and actions
+    - Retrieve workflows (all, by user, or single workflow)
+    - Update workflow details including name, triggers, actions, and status
+    - Delete workflows from the system
+"""
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select

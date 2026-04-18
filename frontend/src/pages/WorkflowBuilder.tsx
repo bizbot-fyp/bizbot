@@ -107,26 +107,22 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
 
-  // ─── Mode & IDs from URL ──────────────────────────────────────────────────
+
   const urlMode = searchParams.get("mode");
   const mode = propMode || (urlMode === "admin" ? "admin" : "user");
   const isReadOnly = mode === "user";
 
-  // workflowId is an INTEGER on the backend — always parse it
   const workflowIdRaw = searchParams.get("workflowId");
   const workflowId = workflowIdRaw ? parseInt(workflowIdRaw, 10) : null;
 
-  // userId is the business_id / user being managed by admin
   const userId = searchParams.get("userId");
 
-  // ─── State for workflow name ──────────────────────────────────────────────
+  // ─── State for workflow name ───
   const [workflowName, setWorkflowName] = useState("New Automation Workflow");
 
-  // ─── Back navigation: admin goes back to that user's detail page ──────────
   const handleBack = () => {
   if (mode === "admin" && userId) {
-    // Format userId to ensure it has 'user-' prefix for the return URL
-     // Extract just the numeric ID (remove "user-" if present)
+  
     const numericId = userId.replace("user-", "");
     navigate(`/admin/user/${numericId}`);
   } else {
@@ -147,7 +143,7 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // ─── Fetch workflow from backend when workflowId is present ───────────────
+
   useEffect(() => {
     if (!workflowId) return;
 
@@ -161,7 +157,7 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
         // Set workflow name
         if (data.name) setWorkflowName(data.name);
         
-        // actions is stored as { nodes, connections } — an object, not an array
+      
         if (data.actions?.nodes) setNodes(data.actions.nodes);
         if (data.actions?.connections) setConnections(data.actions.connections);
       } catch (err) {
@@ -179,7 +175,7 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
     fetchWorkflow();
   }, [workflowId, toast]);
 
-  // ─── Icon map ─────────────────────────────────────────────────────────────
+
   const getIconComponent = (iconName: string) => {
     const icons: Record<string, React.ReactNode> = {
       zap:     <Zap className="w-4 h-4" />,
@@ -196,7 +192,7 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
     return icons[iconName] || <Zap className="w-4 h-4" />;
   };
 
-  // ─── Node & workflow templates ────────────────────────────────────────────
+
   const nodeTemplates: NodeTemplate[] = [
     { type: "trigger",     label: "Trigger",          icon: <Zap className="w-4 h-4" />,         color: "bg-primary",   description: "Start automation" },
     { type: "action",      label: "Send Email",        icon: <Mail className="w-4 h-4" />,         color: "bg-warning",   description: "Send email to contacts" },
@@ -262,7 +258,6 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
     },
   ];
 
-  // ─── Canvas actions (disabled in read-only mode) ─────────────────────────
   const addNode = (template: NodeTemplate, position: NodePosition | null = null) => {
     if (isReadOnly) return;
 
@@ -417,7 +412,7 @@ if (mode === "admin" && userId) {
 
         toast({ title: "Success", description: "Workflow created successfully!" });
         
-        // Navigate back to user detail page after creation
+
        // After creation, navigate to admin user detail page
 if (mode === "admin" && userId) {
    const numericId = userId.replace("user-", "");
