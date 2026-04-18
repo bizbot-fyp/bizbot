@@ -16,7 +16,7 @@ import models
 import security
 import deps
 from database import Base, ENGINE as engine, SessionLocal as session_local
-from routers import auth, contact, users
+from routers import auth, contact, users,workflows
 
 
 # =========================
@@ -59,7 +59,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(contact.router)
-
+app.include_router(workflows.router)
 
 # =========================
 # STARTUP EVENTS

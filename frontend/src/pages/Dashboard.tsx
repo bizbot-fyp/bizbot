@@ -40,6 +40,13 @@ interface DashboardProps {
   isAuthenticated: boolean;
 }
 
+interface Workflow {
+  id: number;
+  name: string;
+  status: "active" | "paused" | "error";
+  business_id: string;
+}
+
 const Dashboard = ({ isAuthenticated }: DashboardProps) => {
   const navigate = useNavigate();
 
@@ -53,6 +60,34 @@ const Dashboard = ({ isAuthenticated }: DashboardProps) => {
     responseTime: 1.2,
     successRate: 98,
   });
+
+  // State for user workflows
+  const [userWorkflows, setUserWorkflows] = useState<Workflow[]>([]);
+  const [activeWorkflowsCount, setActiveWorkflowsCount] = useState(0);
+  const [isLoadingWorkflows, setIsLoadingWorkflows] = useState(true);
+
+  // Fetch user workflows
+  useEffect(() => {
+    const fetchUserWorkflows = async () => {
+      try {
+        // First get current user to get their ID
+        const userResponse = await api.get("/api/users/me");
+        const userId = userResponse.data.id;
+        
+        // Then fetch workflows for this user
+        const response = await api.get(`/workflows/user/${userId}`);
+        setUserWorkflows(response.data);
+        const activeCount = response.data.filter((wf: Workflow) => wf.status === "active").length;
+        setActiveWorkflowsCount(activeCount);
+      } catch (error) {
+        console.error("Failed to load workflows", error);
+      } finally {
+        setIsLoadingWorkflows(false);
+      }
+    };
+    
+    if (isAuthenticated) fetchUserWorkflows();
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -125,16 +160,14 @@ const Dashboard = ({ isAuthenticated }: DashboardProps) => {
       title: "Workflow Automation",
       description: "Drag & drop workflow builder",
       icon: GitBranch,
-      metric: "12",
-      metricLabel: "Active Processes",
+      metric: isLoadingWorkflows ? "..." : activeWorkflowsCount.toString(),
+      metricLabel: "Active Workflows",
       gradient: "from-workflow to-workflow/80",
-      action: () => navigate("/workflow-builder?mode=user"),
-      actionLabel: "View Workflow",
-      workflows: [
-        { name: "Lead Nurturing", active: true },
-        { name: "Client Onboarding", active: true },
-        { name: "Data Sync", active: false },
-      ],
+     action: () => navigate("/user-workflows"), 
+      actionLabel: "View Workflows",
+      // Add workflows data for display
+      userWorkflows: userWorkflows,
+      showWorkflowsList: true,
     },
   ];
 
@@ -239,91 +272,100 @@ const Dashboard = ({ isAuthenticated }: DashboardProps) => {
             Automation Services
           </h2>
 
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-  {featureCards.map((card, index) => (
-    <motion.div
-      key={card.title}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.1 }}
-      className="card-elevated-hover overflow-hidden flex flex-col"
-    >
-      {/* Card top gradient */}
-      <div className={`h-2 bg-gradient-to-r ${card.gradient}`} />
-
-      <div className="p-6 flex flex-col flex-1">
-        {/* Card Icon */}
-        <div className="flex items-start justify-between mb-4">
-          <div className={`p-3 rounded-lg bg-gradient-to-br ${card.gradient}`}>
-            <card.icon className="w-6 h-6 text-white" />
-          </div>
-        </div>
-
-        {/* Card Content */}
-        <h3 className="text-lg font-semibold text-[#1E2361] mb-4">
-          {card.title}
-        </h3>
-
-        <div className="mb-4">
-          <div className="text-3xl font-bold text-[#1E2361]">{card.metric}</div>
-          <div className="text-sm text-muted-foreground">{card.metricLabel}</div>
-        </div>
-
-        {/* Optional Charts */}
-        {card.chartData && (
-          <div className="flex items-end gap-1 h-12 mb-4">
-            {card.chartData.map((height, i) => (
-              <div
-                key={i}
-                className={`flex-1 bg-gradient-to-t ${card.gradient} rounded-t opacity-70`}
-                style={{ height: `${height}%` }}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Optional Platforms */}
-        {card.platforms && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {card.platforms.map((platform) => (
-              <span
-                key={platform}
-                className="px-2 py-1 text-xs font-medium bg-accent text-accent-foreground rounded-md"
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featureCards.map((card, index) => (
+              <motion.div
+                key={card.title}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+                className="card-elevated-hover overflow-hidden flex flex-col"
               >
-                {platform}
-              </span>
+                {/* Card top gradient */}
+                <div className={`h-2 bg-gradient-to-r ${card.gradient}`} />
+
+                <div className="p-6 flex flex-col flex-1">
+                  {/* Card Icon */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`p-3 rounded-lg bg-gradient-to-br ${card.gradient}`}>
+                      <card.icon className="w-6 h-6 text-white" />
+                    </div>
+                  </div>
+
+                  {/* Card Content */}
+                  <h3 className="text-lg font-semibold text-[#1E2361] mb-4">
+                    {card.title}
+                  </h3>
+
+                  <div className="mb-4">
+                    <div className="text-3xl font-bold text-[#1E2361]">{card.metric}</div>
+                    <div className="text-sm text-muted-foreground">{card.metricLabel}</div>
+                  </div>
+
+                  {/* Optional Charts */}
+                  {card.chartData && (
+                    <div className="flex items-end gap-1 h-12 mb-4">
+                      {card.chartData.map((height, i) => (
+                        <div
+                          key={i}
+                          className={`flex-1 bg-gradient-to-t ${card.gradient} rounded-t opacity-70`}
+                          style={{ height: `${height}%` }}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Optional Platforms */}
+                  {card.platforms && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {card.platforms.map((platform) => (
+                        <span
+                          key={platform}
+                          className="px-2 py-1 text-xs font-medium bg-accent text-accent-foreground rounded-md"
+                        >
+                          {platform}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Show User Workflows List */}
+                  {card.showWorkflowsList && card.userWorkflows && (
+                    <div className="space-y-2 mb-4">
+                      {isLoadingWorkflows ? (
+                        <div className="text-sm text-muted-foreground">Loading workflows...</div>
+                      ) : card.userWorkflows.length === 0 ? (
+                        <div className="text-sm text-muted-foreground">No workflows yet</div>
+                      ) : (
+                        card.userWorkflows.slice(0, 3).map((wf: Workflow) => (
+                          <div key={wf.id} className="flex items-center gap-2 text-sm">
+                            <div
+                              className={`w-2 h-2 rounded-full ${wf.status === "active" ? "bg-success" : "bg-muted"}`}
+                            />
+                            <span className="text-muted-foreground">{wf.name}</span>
+                          </div>
+                        ))
+                      )}
+                      {card.userWorkflows.length > 3 && (
+                        <div className="text-xs text-muted-foreground pl-4">
+                          +{card.userWorkflows.length - 3} more
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <Button
+                    onClick={card.action}
+                    variant="ghost"
+                    className="w-full justify-between text-[#1E2361] bg-gradient-to-r from-[#F8FAFC] to-[#F1F5F9] hover:from-[#F1F5F9] hover:to-[#E2E8F0] border border-slate-200 mt-auto"
+                  >
+                    {card.actionLabel}
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+              </motion.div>
             ))}
           </div>
-        )}
-
-        {/* Optional Workflows */}
-        {card.workflows && (
-          <div className="space-y-2 mb-4">
-            {card.workflows.map((wf) => (
-              <div key={wf.name} className="flex items-center gap-2 text-sm">
-                <div
-                  className={`w-2 h-2 rounded-full ${wf.active ? "bg-success" : "bg-muted"}`}
-                />
-                <span className="text-muted-foreground">{wf.name}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        
-       <Button
-  onClick={card.action}
-  variant="ghost"
-  className="w-full justify-between text-[#1E2361] bg-gradient-to-r from-[#F8FAFC] to-[#F1F5F9] hover:from-[#F1F5F9] hover:to-[#E2E8F0] border border-slate-200 mt-auto"
->
-  {card.actionLabel}
-  <ArrowRight className="w-4 h-4 ml-2" />
-</Button>
-      </div>
-    </motion.div>
-  ))}
-</div>
-
         </section>
 
         {/* Real-time Metrics Section */}

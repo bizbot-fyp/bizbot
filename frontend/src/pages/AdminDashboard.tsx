@@ -160,9 +160,9 @@ const StatusBadge = ({ status }: { status: string }) => {
 const MetricCard = ({ metric, index }: { metric: any; index: number }) => (
   <motion.div
     key={metric.title}
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: index * 0.1 }}
+    initial={{ opacity: 0}}
+    animate={{ opacity: 1 }}
+    transition={{ duration:0.3 }}
     className="card-elevated p-6"
   >
     <div className="flex items-start justify-between mb-4">
@@ -189,7 +189,7 @@ const ChartCard = ({
   children: React.ReactNode;
 }) => (
   <motion.div
-    initial={{ opacity: 0, y: 20 }}
+    initial={{ opacity: 0, y: 0 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay }}
     className="card-elevated p-6"
@@ -206,29 +206,73 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [allUsers, setAllUsers] = useState<User[]>(mockUsers);
+  const [isLoading, setIsLoading] = useState(true);
+ 
 
   // Fetch real users
-  useEffect(() => {
-    const fetchRealUsers = async () => {
-      try {
-        const response = await api.get("/api/users/");
-        const realUsers: User[] = response.data.map((u: any) => ({
-          id: u.id.toString(),
-          name: u.username,
-          email: u.email,
-          company: u.company || "Individual User",
-          status: u.is_active ? "active" : "inactive",
-          lastLogin: new Date(u.created_at).toLocaleDateString(),
-          workflows: 0,
-          isReal: true,
-        }));
-        setAllUsers([...mockUsers, ...realUsers]);
-      } catch (error) {
-        console.error("Failed to fetch real users", error);
+// Fetch real users with workflow counts
+useEffect(() => {
+  let isMounted = true;
+
+  const fetchRealUsers = async () => {
+    try {
+      // Step 1: Get all users
+      const response = await api.get("/api/users/");
+      const users = response.data;
+      
+      // Step 2: For each user, get their workflow count
+      const realUsersWithCounts = [];
+      
+      for (const u of users) {
+        try {
+          // Fetch workflows for this specific user
+          const workflowsRes = await api.get(`/workflows/user/${u.id}`);
+          const workflowCount = workflowsRes.data.length;
+          
+          realUsersWithCounts.push({
+            id: u.id.toString(),
+            name: u.username,
+            email: u.email,
+            company: u.company || "Individual User",
+            status: u.is_active ? "active" : "inactive",
+            lastLogin: new Date(u.created_at).toLocaleDateString(),
+            workflows: workflowCount,  // ← Real workflow count!
+            isReal: true,
+          });
+        } catch (error) {
+          console.error(`Failed to get workflows for user ${u.id}`, error);
+          // If error, set workflows to 0
+          realUsersWithCounts.push({
+            id: u.id.toString(),
+            name: u.username,
+            email: u.email,
+            company: u.company || "Individual User",
+            status: u.is_active ? "active" : "inactive",
+            lastLogin: new Date(u.created_at).toLocaleDateString(),
+            workflows: 0,
+            isReal: true,
+          });
+        }
       }
-    };
-    fetchRealUsers();
-  }, []);
+
+      if (isMounted) {
+        setAllUsers([...mockUsers, ...realUsersWithCounts]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch real users", error);
+    } finally {
+      if (isMounted) {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  fetchRealUsers();
+
+  return () => {
+    isMounted = false;
+  };
+}, []);
 
   const filteredUsers = useMemo(
     () =>
@@ -246,7 +290,7 @@ const AdminDashboard = () => {
     navigate("/login");
   };
 
-  const metricCards = [
+  const metricCards = useMemo(() => [
     {
       title: "Total Users",
       value: allUsers.length.toString(),
@@ -279,7 +323,7 @@ const AdminDashboard = () => {
       color: "text-workflow",
       bgColor: "bg-workflow/10",
     },
-  ];
+ ], [allUsers.length]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -329,7 +373,8 @@ const AdminDashboard = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+   
+<main className="container mx-auto px-4 py-8 max-w-full overflow-x-hidden">
         {/* Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {metricCards.map((metric, index) => (
@@ -340,7 +385,7 @@ const AdminDashboard = () => {
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <ChartCard title="User Growth" delay={0.4}>
-            <ResponsiveContainer width="100%" height="100%">
+         <ResponsiveContainer width="100%" height={250}>
               <LineChart data={userGrowthData}>
                 <CartesianGrid
                   strokeDasharray="3 3"
@@ -374,7 +419,7 @@ const AdminDashboard = () => {
           </ChartCard>
 
           <ChartCard title="System Health" delay={0.5}>
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
                   data={systemHealthData}
@@ -410,7 +455,7 @@ const AdminDashboard = () => {
           </ChartCard>
 
           <ChartCard title="Automation Volume" delay={0.6}>
-            <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height={250}>
               <BarChart data={automationVolumeData}>
                 <CartesianGrid
                   strokeDasharray="3 3"
@@ -464,9 +509,12 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <Table>
+       {/* We set a max height (e.g., 400px) and allow vertical scrolling (overflow-y-auto) */}
+<div className="overflow-x-auto overflow-y-auto max-h-[450px] scrollbar-thin scrollbar-thumb-gray-300">
+           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="hover:bg-transparent">
+               
                 <TableHead>User</TableHead>
                 <TableHead className="hidden md:table-cell">Company</TableHead>
                 <TableHead>Status</TableHead>
@@ -541,6 +589,7 @@ const AdminDashboard = () => {
               ))}
             </TableBody>
           </Table>
+          </div>
         </motion.div>
       </main>
     </div>

@@ -3,13 +3,14 @@
  * Author: Hiba Noor
  *
  * Description:
- *   This component implements a visual drag-and-drop workflow builder.
- *   It allows users to create, edit, and connect workflow nodes such as triggers,
- *   actions, conditions, delays, filters, and integrations.For user it is read only
- *   admin will have full access
+ *   Visual drag-and-drop workflow builder.
+ *   - Admin mode: full edit access, back arrow returns to /admin/users/{userId}
+ *   - User mode: read-only, back arrow returns to /dashboard
+ *   - workflowId is an integer (backend uses int primary key)
+ *   - Canvas state (nodes + connections) is stored inside actions as a JSON object
  */
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -47,6 +48,9 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+
+const API_URL = "http://localhost:8000";
 
 interface NodePosition {
   x: number;
@@ -87,26 +91,51 @@ interface WorkflowBuilderProps {
   mode?: "user" | "admin";
 }
 
+const DEFAULT_NODES: WorkflowNode[] = [
+  {
+    id: "start-1",
+    type: "trigger",
+    label: "Start",
+    icon: "zap",
+    position: { x: 100, y: 200 },
+    color: "bg-primary",
+  },
+];
+
 const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  
-  // Determine mode from props or URL params
+  const { toast } = useToast();
+
+  // ─── Mode & IDs from URL ──────────────────────────────────────────────────
   const urlMode = searchParams.get("mode");
   const mode = propMode || (urlMode === "admin" ? "admin" : "user");
   const isReadOnly = mode === "user";
 
-  const [nodes, setNodes] = useState<WorkflowNode[]>([
-    {
-      id: "start-1",
-      type: "trigger",
-      label: "Start",
-      icon: "zap",
-      position: { x: 100, y: 200 },
-      color: "bg-primary",
-    },
-  ]);
+  // workflowId is an INTEGER on the backend — always parse it
+  const workflowIdRaw = searchParams.get("workflowId");
+  const workflowId = workflowIdRaw ? parseInt(workflowIdRaw, 10) : null;
 
+  // userId is the business_id / user being managed by admin
+  const userId = searchParams.get("userId");
+
+  // ─── State for workflow name ──────────────────────────────────────────────
+  const [workflowName, setWorkflowName] = useState("New Automation Workflow");
+
+  // ─── Back navigation: admin goes back to that user's detail page ──────────
+  const handleBack = () => {
+  if (mode === "admin" && userId) {
+    // Format userId to ensure it has 'user-' prefix for the return URL
+     // Extract just the numeric ID (remove "user-" if present)
+    const numericId = userId.replace("user-", "");
+    navigate(`/admin/user/${numericId}`);
+  } else {
+    navigate("/user-workflows");
+  }
+};
+
+  // ─── Canvas state ─────────────────────────────────────────────────────────
+  const [nodes, setNodes] = useState<WorkflowNode[]>(DEFAULT_NODES);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -114,36 +143,71 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionStart, setConnectionStart] = useState<string | null>(null);
   const [tempConnection, setTempConnection] = useState<{ x: number; y: number } | null>(null);
+  const [isLoadingWorkflow, setIsLoadingWorkflow] = useState(false);
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
+  // ─── Fetch workflow from backend when workflowId is present ───────────────
+  useEffect(() => {
+    if (!workflowId) return;
+
+    const fetchWorkflow = async () => {
+      setIsLoadingWorkflow(true);
+      try {
+        const res = await fetch(`${API_URL}/workflows/${workflowId}`);
+        if (!res.ok) throw new Error("Failed to fetch workflow");
+        const data = await res.json();
+
+        // Set workflow name
+        if (data.name) setWorkflowName(data.name);
+        
+        // actions is stored as { nodes, connections } — an object, not an array
+        if (data.actions?.nodes) setNodes(data.actions.nodes);
+        if (data.actions?.connections) setConnections(data.actions.connections);
+      } catch (err) {
+        console.error("Failed to load workflow:", err);
+        toast({
+          title: "Error",
+          description: "Could not load workflow.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoadingWorkflow(false);
+      }
+    };
+
+    fetchWorkflow();
+  }, [workflowId, toast]);
+
+  // ─── Icon map ─────────────────────────────────────────────────────────────
   const getIconComponent = (iconName: string) => {
     const icons: Record<string, React.ReactNode> = {
-      zap: <Zap className="w-4 h-4" />,
-      mail: <Mail className="w-4 h-4" />,
+      zap:     <Zap className="w-4 h-4" />,
+      mail:    <Mail className="w-4 h-4" />,
       message: <MessageSquare className="w-4 h-4" />,
-      branch: <GitBranch className="w-4 h-4" />,
-      chart: <BarChart3 className="w-4 h-4" />,
-      check: <CheckSquare className="w-4 h-4" />,
-      clock: <Clock className="w-4 h-4" />,
-      link: <Link className="w-4 h-4" />,
-      search: <Search className="w-4 h-4" />,
-      globe: <Globe className="w-4 h-4" />,
+      branch:  <GitBranch className="w-4 h-4" />,
+      chart:   <BarChart3 className="w-4 h-4" />,
+      check:   <CheckSquare className="w-4 h-4" />,
+      clock:   <Clock className="w-4 h-4" />,
+      link:    <Link className="w-4 h-4" />,
+      search:  <Search className="w-4 h-4" />,
+      globe:   <Globe className="w-4 h-4" />,
     };
     return icons[iconName] || <Zap className="w-4 h-4" />;
   };
 
+  // ─── Node & workflow templates ────────────────────────────────────────────
   const nodeTemplates: NodeTemplate[] = [
-    { type: "trigger", label: "Trigger", icon: <Zap className="w-4 h-4" />, color: "bg-primary", description: "Start automation" },
-    { type: "action", label: "Send Email", icon: <Mail className="w-4 h-4" />, color: "bg-warning", description: "Send email to contacts" },
-    { type: "action", label: "WhatsApp Message", icon: <MessageSquare className="w-4 h-4" />, color: "bg-whatsapp", description: "Send WhatsApp message" },
-    { type: "condition", label: "Condition", icon: <GitBranch className="w-4 h-4" />, color: "bg-workflow", description: "Add conditional logic" },
-    { type: "action", label: "Update CRM", icon: <BarChart3 className="w-4 h-4" />, color: "bg-info", description: "Update customer data" },
-    { type: "action", label: "Create Task", icon: <CheckSquare className="w-4 h-4" />, color: "bg-success", description: "Create new task" },
-    { type: "delay", label: "Wait/Delay", icon: <Clock className="w-4 h-4" />, color: "bg-warning", description: "Add time delay" },
-    { type: "webhook", label: "Webhook", icon: <Link className="w-4 h-4" />, color: "bg-info", description: "Send/receive webhook" },
-    { type: "filter", label: "Filter", icon: <Search className="w-4 h-4" />, color: "bg-warning", description: "Filter data" },
-    { type: "integration", label: "API Call", icon: <Globe className="w-4 h-4" />, color: "bg-workflow", description: "External API integration" },
+    { type: "trigger",     label: "Trigger",          icon: <Zap className="w-4 h-4" />,         color: "bg-primary",   description: "Start automation" },
+    { type: "action",      label: "Send Email",        icon: <Mail className="w-4 h-4" />,         color: "bg-warning",   description: "Send email to contacts" },
+    { type: "action",      label: "WhatsApp Message",  icon: <MessageSquare className="w-4 h-4" />,color: "bg-whatsapp",  description: "Send WhatsApp message" },
+    { type: "condition",   label: "Condition",         icon: <GitBranch className="w-4 h-4" />,    color: "bg-workflow",  description: "Add conditional logic" },
+    { type: "action",      label: "Update CRM",        icon: <BarChart3 className="w-4 h-4" />,    color: "bg-info",      description: "Update customer data" },
+    { type: "action",      label: "Create Task",       icon: <CheckSquare className="w-4 h-4" />,  color: "bg-success",   description: "Create new task" },
+    { type: "delay",       label: "Wait/Delay",        icon: <Clock className="w-4 h-4" />,        color: "bg-warning",   description: "Add time delay" },
+    { type: "webhook",     label: "Webhook",           icon: <Link className="w-4 h-4" />,         color: "bg-info",      description: "Send/receive webhook" },
+    { type: "filter",      label: "Filter",            icon: <Search className="w-4 h-4" />,       color: "bg-warning",   description: "Filter data" },
+    { type: "integration", label: "API Call",          icon: <Globe className="w-4 h-4" />,        color: "bg-workflow",  description: "External API integration" },
   ];
 
   const workflowTemplates: WorkflowTemplate[] = [
@@ -152,13 +216,13 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
       icon: <Target className="w-4 h-4" />,
       description: "Automated lead follow-up sequence",
       nodes: [
-        { id: "start", type: "trigger", label: "New Lead", icon: "zap", position: { x: 100, y: 200 }, color: "bg-primary" },
-        { id: "email1", type: "action", label: "Welcome Email", icon: "mail", position: { x: 300, y: 200 }, color: "bg-warning" },
-        { id: "delay1", type: "delay", label: "Wait 2 Days", icon: "clock", position: { x: 500, y: 200 }, color: "bg-warning" },
-        { id: "email2", type: "action", label: "Follow-up Email", icon: "mail", position: { x: 700, y: 200 }, color: "bg-warning" },
+        { id: "start",  type: "trigger", label: "New Lead",       icon: "zap",   position: { x: 100, y: 200 }, color: "bg-primary" },
+        { id: "email1", type: "action",  label: "Welcome Email",  icon: "mail",  position: { x: 300, y: 200 }, color: "bg-warning" },
+        { id: "delay1", type: "delay",   label: "Wait 2 Days",    icon: "clock", position: { x: 500, y: 200 }, color: "bg-warning" },
+        { id: "email2", type: "action",  label: "Follow-up Email",icon: "mail",  position: { x: 700, y: 200 }, color: "bg-warning" },
       ],
       connections: [
-        { from: "start", to: "email1" },
+        { from: "start",  to: "email1" },
         { from: "email1", to: "delay1" },
         { from: "delay1", to: "email2" },
       ],
@@ -168,16 +232,16 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
       icon: <Users className="w-4 h-4" />,
       description: "New client welcome automation",
       nodes: [
-        { id: "start", type: "trigger", label: "New Client", icon: "zap", position: { x: 100, y: 150 }, color: "bg-primary" },
-        { id: "welcome", type: "action", label: "Welcome Message", icon: "message", position: { x: 300, y: 150 }, color: "bg-whatsapp" },
-        { id: "crm", type: "action", label: "Update CRM", icon: "chart", position: { x: 300, y: 300 }, color: "bg-info" },
-        { id: "task", type: "action", label: "Create Task", icon: "check", position: { x: 500, y: 225 }, color: "bg-success" },
+        { id: "start",   type: "trigger", label: "New Client",      icon: "zap",     position: { x: 100, y: 150 }, color: "bg-primary"  },
+        { id: "welcome", type: "action",  label: "Welcome Message", icon: "message", position: { x: 300, y: 150 }, color: "bg-whatsapp" },
+        { id: "crm",     type: "action",  label: "Update CRM",      icon: "chart",   position: { x: 300, y: 300 }, color: "bg-info"     },
+        { id: "task",    type: "action",  label: "Create Task",     icon: "check",   position: { x: 500, y: 225 }, color: "bg-success"  },
       ],
       connections: [
-        { from: "start", to: "welcome" },
-        { from: "start", to: "crm" },
-        { from: "welcome", to: "task" },
-        { from: "crm", to: "task" },
+        { from: "start",   to: "welcome" },
+        { from: "start",   to: "crm"     },
+        { from: "welcome", to: "task"    },
+        { from: "crm",     to: "task"    },
       ],
     },
     {
@@ -185,40 +249,32 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
       icon: <RefreshCw className="w-4 h-4" />,
       description: "Sync data between platforms",
       nodes: [
-        { id: "start", type: "trigger", label: "Data Update", icon: "zap", position: { x: 100, y: 200 }, color: "bg-primary" },
-        { id: "filter", type: "filter", label: "Filter Data", icon: "search", position: { x: 300, y: 200 }, color: "bg-warning" },
-        { id: "api1", type: "integration", label: "Sync Platform A", icon: "globe", position: { x: 500, y: 150 }, color: "bg-workflow" },
-        { id: "api2", type: "integration", label: "Sync Platform B", icon: "globe", position: { x: 500, y: 250 }, color: "bg-workflow" },
+        { id: "start",  type: "trigger",     label: "Data Update",    icon: "zap",    position: { x: 100, y: 200 }, color: "bg-primary"  },
+        { id: "filter", type: "filter",      label: "Filter Data",    icon: "search", position: { x: 300, y: 200 }, color: "bg-warning"  },
+        { id: "api1",   type: "integration", label: "Sync Platform A",icon: "globe",  position: { x: 500, y: 150 }, color: "bg-workflow" },
+        { id: "api2",   type: "integration", label: "Sync Platform B",icon: "globe",  position: { x: 500, y: 250 }, color: "bg-workflow" },
       ],
       connections: [
-        { from: "start", to: "filter" },
-        { from: "filter", to: "api1" },
-        { from: "filter", to: "api2" },
+        { from: "start",  to: "filter" },
+        { from: "filter", to: "api1"   },
+        { from: "filter", to: "api2"   },
       ],
     },
   ];
 
+  // ─── Canvas actions (disabled in read-only mode) ─────────────────────────
   const addNode = (template: NodeTemplate, position: NodePosition | null = null) => {
     if (isReadOnly) return;
-    
-    const iconName = template.label.toLowerCase().includes("email")
-      ? "mail"
-      : template.label.toLowerCase().includes("whatsapp")
-      ? "message"
-      : template.label.toLowerCase().includes("condition")
-      ? "branch"
-      : template.label.toLowerCase().includes("crm")
-      ? "chart"
-      : template.label.toLowerCase().includes("task")
-      ? "check"
-      : template.label.toLowerCase().includes("delay")
-      ? "clock"
-      : template.label.toLowerCase().includes("webhook")
-      ? "link"
-      : template.label.toLowerCase().includes("filter")
-      ? "search"
-      : template.label.toLowerCase().includes("api")
-      ? "globe"
+
+    const iconName = template.label.toLowerCase().includes("email")     ? "mail"
+      : template.label.toLowerCase().includes("whatsapp")               ? "message"
+      : template.label.toLowerCase().includes("condition")              ? "branch"
+      : template.label.toLowerCase().includes("crm")                    ? "chart"
+      : template.label.toLowerCase().includes("task")                   ? "check"
+      : template.label.toLowerCase().includes("delay")                  ? "clock"
+      : template.label.toLowerCase().includes("webhook")                ? "link"
+      : template.label.toLowerCase().includes("filter")                 ? "search"
+      : template.label.toLowerCase().includes("api")                    ? "globe"
       : "zap";
 
     const newNode: WorkflowNode = {
@@ -240,14 +296,10 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
 
   const handleNodeDragStart = (e: React.MouseEvent, nodeId: string) => {
     if (isReadOnly) return;
-    
     const node = nodes.find((n) => n.id === nodeId);
     if (!node) return;
     const rect = (e.target as HTMLElement).getBoundingClientRect();
-    setDragOffset({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
+    setDragOffset({ x: e.clientX - rect.left, y: e.clientY - rect.top });
     setSelectedNode(nodeId);
     setIsDragging(true);
   };
@@ -255,11 +307,9 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
   const handleNodeDrag = useCallback(
     (e: React.MouseEvent) => {
       if (isReadOnly || !isDragging || !selectedNode || !canvasRef.current) return;
-
       const rect = canvasRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left - dragOffset.x;
-      const y = e.clientY - rect.top - dragOffset.y;
-
+      const y = e.clientY - rect.top  - dragOffset.y;
       setNodes((prevNodes) =>
         prevNodes.map((node) =>
           node.id === selectedNode ? { ...node, position: { x, y } } : node
@@ -269,9 +319,7 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
     [isDragging, selectedNode, dragOffset, isReadOnly]
   );
 
-  const handleNodeDragEnd = () => {
-    setIsDragging(false);
-  };
+  const handleNodeDragEnd = () => setIsDragging(false);
 
   const startConnection = (nodeId: string) => {
     if (isReadOnly) return;
@@ -281,12 +329,8 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
 
   const handleCanvasMouseMove = (e: React.MouseEvent) => {
     if (isReadOnly || !isConnecting || !connectionStart || !canvasRef.current) return;
-
     const rect = canvasRef.current.getBoundingClientRect();
-    setTempConnection({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
+    setTempConnection({ x: e.clientX - rect.left, y: e.clientY - rect.top });
   };
 
   const completeConnection = (targetNodeId: string) => {
@@ -296,15 +340,10 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
       setTempConnection(null);
       return;
     }
-
-    const exists = connections.some(
-      (conn) => conn.from === connectionStart && conn.to === targetNodeId
-    );
-
+    const exists = connections.some((c) => c.from === connectionStart && c.to === targetNodeId);
     if (!exists) {
       setConnections([...connections, { from: connectionStart, to: targetNodeId }]);
     }
-
     setIsConnecting(false);
     setConnectionStart(null);
     setTempConnection(null);
@@ -320,51 +359,101 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
   const clearCanvas = () => {
     if (isReadOnly) return;
     if (window.confirm("Clear entire workflow?")) {
-      setNodes([
-        {
-          id: "start-1",
-          type: "trigger",
-          label: "Start",
-          icon: "zap",
-          position: { x: 100, y: 200 },
-          color: "bg-primary",
-        },
-      ]);
+      setNodes(DEFAULT_NODES);
       setConnections([]);
     }
   };
 
-  const saveWorkflow = () => {
+  const cleanUserId = userId?.replace("user-", "");
+
+  // ─── Save: PUT to update existing, POST to create new ────────────────────
+  const saveWorkflow = async () => {
     if (isReadOnly) return;
-    const workflow = { nodes, connections };
-    console.log("Saving workflow:", workflow);
-    alert("Workflow saved successfully!");
+
+    const canvasState = { nodes, connections };
+
+    try {
+      if (workflowId) {
+        // UPDATE existing workflow
+        const res = await fetch(`${API_URL}/workflows/${workflowId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            name: workflowName,
+            actions: canvasState 
+          }),
+        });
+        if (!res.ok) throw new Error("Failed to update workflow");
+        
+        toast({ title: "Success", description: "Workflow updated successfully!" });
+        
+        // Navigate back after update
+       // After update, stay on admin user detail page
+if (mode === "admin" && userId) {
+    const numericId = userId.replace("user-", "");
+  navigate(`/admin/user/${numericId}`, { state: { refresh: Date.now() } });
+} else {
+  navigate("/user-workflows");
+}
+        return;
+      } else {
+        // CREATE new workflow
+        if (!userId) {
+          toast({ title: "Error", description: "No user ID found. Cannot create workflow.", variant: "destructive" });
+          return;
+        }
+        
+        const res = await fetch(`${API_URL}/workflows/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            business_id: cleanUserId,
+            name: workflowName,
+            triggers: [],
+            actions: canvasState,
+          }),
+        });
+        if (!res.ok) throw new Error("Failed to create workflow");
+
+        toast({ title: "Success", description: "Workflow created successfully!" });
+        
+        // Navigate back to user detail page after creation
+       // After creation, navigate to admin user detail page
+if (mode === "admin" && userId) {
+   const numericId = userId.replace("user-", "");
+  navigate(`/admin/user/${numericId}`);
+} else {
+  navigate("/user-workflows");
+}
+        return;
+      }
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Error", description: "Failed to save workflow.", variant: "destructive" });
+    }
   };
 
+  // ─── SVG path helper ──────────────────────────────────────────────────────
   const getConnectionPath = (fromNode: WorkflowNode, toNode: WorkflowNode) => {
     const fromX = fromNode.position.x + 75;
     const fromY = fromNode.position.y + 40;
-    const toX = toNode.position.x + 75;
-    const toY = toNode.position.y + 40;
-
-    const midX = (fromX + toX) / 2;
-
+    const toX   = toNode.position.x  + 75;
+    const toY   = toNode.position.y  + 40;
+    const midX  = (fromX + toX) / 2;
     return `M ${fromX} ${fromY} C ${midX} ${fromY}, ${midX} ${toY}, ${toX} ${toY}`;
   };
 
   const selectedNodeData = nodes.find((n) => n.id === selectedNode);
 
+  // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card/95 backdrop-blur border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/dashboard")}
-            >
+            {/* ← Back arrow goes to correct page based on mode */}
+            <Button variant="ghost" size="icon" onClick={handleBack}>
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div className="flex items-center gap-3">
@@ -392,6 +481,12 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
 
           {!isReadOnly && (
             <div className="flex items-center gap-2">
+              <Input
+                value={workflowName}
+                onChange={(e) => setWorkflowName(e.target.value)}
+                placeholder="Workflow Name"
+                className="w-64"
+              />
               <Button variant="outline" size="sm" onClick={saveWorkflow}>
                 <Save className="w-4 h-4 mr-2" />
                 Save
@@ -412,7 +507,7 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar - Node Palette (hidden in read-only mode) */}
+        {/* Sidebar — Node Palette (hidden in read-only mode) */}
         {!isReadOnly && (
           <aside className="w-72 bg-card border-r border-border overflow-y-auto">
             <div className="p-4">
@@ -433,12 +528,8 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
                       {template.icon}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {template.label}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {template.description}
-                      </p>
+                      <p className="text-sm font-medium text-foreground">{template.label}</p>
+                      <p className="text-xs text-muted-foreground">{template.description}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -461,12 +552,8 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
                       {template.icon}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {template.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {template.description}
-                      </p>
+                      <p className="text-sm font-medium text-foreground">{template.name}</p>
+                      <p className="text-xs text-muted-foreground">{template.description}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -496,38 +583,40 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
             }
           }}
         >
-          {/* Read-only overlay banner */}
+          {/* Loading overlay */}
+          {isLoadingWorkflow && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur z-30">
+              <div className="flex flex-col items-center gap-3">
+                <RefreshCw className="w-8 h-8 text-primary animate-spin" />
+                <p className="text-sm text-muted-foreground">Loading workflow...</p>
+              </div>
+            </div>
+          )}
+
+          {/* Read-only banner for user mode */}
           {isReadOnly && (
             <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
               <div className="flex items-center gap-2 px-4 py-2 bg-muted/90 backdrop-blur border border-border rounded-full shadow-lg">
                 <Lock className="w-4 h-4 text-muted-foreground" />
                 <span className="text-sm font-medium text-muted-foreground">
-                  This workflow is in view-only mode
+                  View Only Mode - Workflow created by Admin
                 </span>
               </div>
             </div>
           )}
 
-          {/* SVG for connections */}
+          {/* SVG connections */}
           <svg className="absolute inset-0 pointer-events-none w-full h-full">
             <defs>
-              <marker
-                id="arrowhead"
-                markerWidth="10"
-                markerHeight="10"
-                refX="9"
-                refY="3"
-                orient="auto"
-              >
+              <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
                 <polygon points="0 0, 10 3, 0 6" fill="hsl(var(--primary))" />
               </marker>
             </defs>
 
             {connections.map((conn, index) => {
               const fromNode = nodes.find((n) => n.id === conn.from);
-              const toNode = nodes.find((n) => n.id === conn.to);
+              const toNode   = nodes.find((n) => n.id === conn.to);
               if (!fromNode || !toNode) return null;
-
               return (
                 <path
                   key={index}
@@ -536,18 +625,12 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
                   strokeWidth="2"
                   fill="none"
                   markerEnd="url(#arrowhead)"
-                  className={`${
-                    isReadOnly
-                      ? ""
-                      : "pointer-events-auto cursor-pointer hover:stroke-destructive transition-colors"
-                  }`}
+                  className={isReadOnly ? "" : "pointer-events-auto cursor-pointer hover:stroke-destructive transition-colors"}
                   onClick={(e) => {
                     if (isReadOnly) return;
                     e.stopPropagation();
                     if (window.confirm("Delete this connection?")) {
-                      setConnections(
-                        connections.filter((c) => !(c.from === conn.from && c.to === conn.to))
-                      );
+                      setConnections(connections.filter((c) => !(c.from === conn.from && c.to === conn.to)));
                     }
                   }}
                 />
@@ -568,17 +651,12 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
             )}
           </svg>
 
-          {/* Render nodes */}
+          {/* Nodes */}
           {nodes.map((node) => (
             <motion.div
               key={node.id}
-              className={`absolute w-[150px] select-none ${
-                isReadOnly ? "cursor-default" : "cursor-move"
-              } ${selectedNode === node.id ? "z-10" : "z-0"}`}
-              style={{
-                left: node.position.x,
-                top: node.position.y,
-              }}
+              className={`absolute w-[150px] select-none ${isReadOnly ? "cursor-default" : "cursor-move"} ${selectedNode === node.id ? "z-10" : "z-0"}`}
+              style={{ left: node.position.x, top: node.position.y }}
               onMouseDown={(e) => {
                 if (!isReadOnly) {
                   e.stopPropagation();
@@ -596,32 +674,21 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
             >
               <div
                 className={`rounded-lg border-2 bg-card shadow-lg overflow-hidden transition-all ${
-                  selectedNode === node.id
-                    ? "border-primary shadow-glow"
-                    : "border-border"
+                  selectedNode === node.id ? "border-primary shadow-glow" : "border-border"
                 }`}
               >
-                <div
-                  className={`${node.color} text-white px-3 py-1.5 flex items-center gap-2`}
-                >
+                <div className={`${node.color} text-white px-3 py-1.5 flex items-center gap-2`}>
                   {getIconComponent(node.icon)}
-                  <span className="text-xs font-medium capitalize">
-                    {node.type}
-                  </span>
+                  <span className="text-xs font-medium capitalize">{node.type}</span>
                 </div>
                 <div className="p-3">
-                  <p className="text-sm font-medium text-foreground text-center">
-                    {node.label}
-                  </p>
+                  <p className="text-sm font-medium text-foreground text-center">{node.label}</p>
                 </div>
                 {!isReadOnly && (
                   <div className="flex justify-center gap-2 px-3 pb-2">
                     <button
                       className="p-1 rounded hover:bg-accent transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        startConnection(node.id);
-                      }}
+                      onClick={(e) => { e.stopPropagation(); startConnection(node.id); }}
                       title="Create connection"
                     >
                       <Link2 className="w-4 h-4 text-primary" />
@@ -629,10 +696,7 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
                     {node.type !== "trigger" && (
                       <button
                         className="p-1 rounded hover:bg-destructive/10 transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteNode(node.id);
-                        }}
+                        onClick={(e) => { e.stopPropagation(); deleteNode(node.id); }}
                         title="Delete node"
                       >
                         <Trash2 className="w-4 h-4 text-destructive" />
@@ -644,20 +708,14 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
             </motion.div>
           ))}
 
-          {/* Canvas guide */}
+          {/* Canvas guide (only show in edit mode) */}
           {nodes.length === 1 && !isReadOnly && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="text-center p-8 bg-card/80 backdrop-blur rounded-xl border border-border">
                 <ArrowLeft className="w-8 h-8 text-muted-foreground mx-auto mb-4 rotate-180" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  Start Building Your Workflow
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Click nodes from the left panel or use templates
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Connect nodes by clicking the link button
-                </p>
+                <h3 className="text-lg font-semibold text-foreground mb-2">Start Building Your Workflow</h3>
+                <p className="text-sm text-muted-foreground">Click nodes from the left panel or use templates</p>
+                <p className="text-sm text-muted-foreground">Connect nodes by clicking the link button</p>
               </div>
             </div>
           )}
@@ -670,9 +728,7 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
               <Settings className="w-4 h-4" />
               Properties
               {isReadOnly && (
-                <Badge variant="outline" className="ml-auto text-xs">
-                  Read Only
-                </Badge>
+                <Badge variant="outline" className="ml-auto text-xs">Read Only</Badge>
               )}
             </h3>
 
@@ -680,11 +736,8 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>Node Type</Label>
-                  <div className="p-2 bg-accent rounded-lg text-sm capitalize">
-                    {selectedNodeData.type}
-                  </div>
+                  <div className="p-2 bg-accent rounded-lg text-sm capitalize">{selectedNodeData.type}</div>
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="node-label">Label</Label>
                   <Input
@@ -692,25 +745,18 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
                     value={selectedNodeData.label}
                     onChange={(e) => {
                       if (isReadOnly) return;
-                      setNodes(
-                        nodes.map((n) =>
-                          n.id === selectedNode ? { ...n, label: e.target.value } : n
-                        )
-                      );
+                      setNodes(nodes.map((n) => n.id === selectedNode ? { ...n, label: e.target.value } : n));
                     }}
                     disabled={isReadOnly}
                     className={isReadOnly ? "bg-muted cursor-not-allowed" : ""}
                   />
                 </div>
-
                 <div className="space-y-2">
                   <Label>Position</Label>
                   <div className="p-2 bg-accent rounded-lg text-sm">
-                    X: {Math.round(selectedNodeData.position.x)}, Y:{" "}
-                    {Math.round(selectedNodeData.position.y)}
+                    X: {Math.round(selectedNodeData.position.x)}, Y: {Math.round(selectedNodeData.position.y)}
                   </div>
                 </div>
-
                 {selectedNodeData.type === "action" && (
                   <div className="space-y-2">
                     <Label>Action Configuration</Label>
@@ -722,7 +768,6 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
                     />
                   </div>
                 )}
-
                 {selectedNodeData.type === "condition" && (
                   <div className="space-y-2">
                     <Label>Condition Logic</Label>
@@ -739,7 +784,6 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
                     </Select>
                   </div>
                 )}
-
                 {selectedNodeData.type === "delay" && (
                   <div className="space-y-2">
                     <Label>Delay Duration</Label>
@@ -762,9 +806,7 @@ const WorkflowBuilder = ({ mode: propMode }: WorkflowBuilderProps) => {
             )}
 
             <div className="mt-8 p-4 bg-accent/50 rounded-lg">
-              <h4 className="text-sm font-semibold text-foreground mb-3">
-                Workflow Stats
-              </h4>
+              <h4 className="text-sm font-semibold text-foreground mb-3">Workflow Stats</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total Nodes:</span>

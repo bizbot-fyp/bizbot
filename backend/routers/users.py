@@ -102,3 +102,19 @@ async def upload_avatar(
     await db.commit()
     await db.refresh(current_user)
     return current_user
+
+
+@router.get("/{user_id}")
+async def get_user(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """Get user by ID"""
+    result = await db.execute(
+        select(models.User).where(models.User.id == user_id)
+    )
+    user = result.scalars().first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return user

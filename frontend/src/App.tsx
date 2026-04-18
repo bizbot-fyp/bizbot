@@ -22,6 +22,7 @@ import UserProfile from "./pages/UserProfile";
 import AboutUs from "./pages/AboutUs";
 import ContactUs from "./pages/ContactUs";
 import AdminContactManagement from "./pages/AdminContactManagement";
+import UserWorkflows from "./pages/UserWorkflows";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ const App = () => {
                 {/* Add this line: */}
                 <Route path="/admin/contacts" element={<AdminContactManagement />} />
               </Route>
+              <Route path="/user-workflows" element={<UserWorkflows />} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

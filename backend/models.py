@@ -137,17 +137,15 @@ class Message(Base):
 # =========================
 class Workflow(Base):
     __tablename__ = "workflows"
-
+    
     id = Column(Integer, primary_key=True, index=True)
-    business_id = Column(String, index=True)
-
-    name = Column(String)
+    business_id = Column(String, index=True)  # This stores the user_id
+    name = Column(String, nullable=False)
     status = Column(String, default="active")
-
-    triggers = Column(JSON)
-    actions = Column(JSON)
-
+    triggers = Column(JSON, default=[])  # JSON for list of triggers
+    actions = Column(JSON, default={"nodes": [], "connections": []})  # JSON for canvas state
     created_at = Column(DateTime, default=utcnow)
+   
 
 
 # =========================
@@ -168,3 +166,22 @@ class ContactMessage(Base):
     message = Column(String)
 
     created_at = Column(DateTime, default=utcnow)
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from pydantic import BaseModel
+from typing import List, Any, Optional
+
+import models
+from database import get_db  # Ensure your database.py defines get_db
+
+router = APIRouter(prefix="/workflows", tags=["Workflows"])
+
+# =========================
+# SCHEMAS (Pydantic Models)
+# =========================
+
+
+
+
+
