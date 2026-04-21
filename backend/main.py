@@ -2,7 +2,7 @@
 File Name: main.py
 Purpose: Initialize FastAPI application, configure middleware, mount static
          files, register routers, and handle startup tasks.
-Author: Syed Najam 
+Author: Najam U Saqib
 """
 
 import os
@@ -113,6 +113,18 @@ async def startup_event():
 # =========================
 # API ROUTES
 # =========================
+@app.get("/")
+async def root():
+    """
+    Root health check endpoint.
+    """
+    return {
+        "status": "online",
+        "message": "BizBot API is running successfully!",
+        "docs": "/docs"
+    }
+
+
 @app.get("/api/dashboard")
 async def get_dashboard_data(
     user: models.User = Depends(deps.get_current_user),
