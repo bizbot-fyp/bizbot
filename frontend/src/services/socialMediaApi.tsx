@@ -216,4 +216,16 @@ export const socialMediaApi = {
     });
     return handleResponse(response);
   },
+
+  // Trigger Make.com Automation
+  triggerAutomation: async () => {
+    const response = await fetch(`${API_BASE_URL}/social-media/trigger-automation`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`,
+      },
+    });
+    return handleResponse(response);
+  },
 };
