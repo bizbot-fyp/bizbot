@@ -637,6 +637,7 @@ const handleSchedulePost = async () => {
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Panel - Input */}
+          {/* Left Panel - Input */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -706,9 +707,8 @@ const handleSchedulePost = async () => {
                   "Generate Content"
                 )}
               </Button>
-            </div>
 
-            {/* NEW: AUTOMATION SECTION */}
+              {/* AUTOMATION SECTION */}
               <div className="mt-8 p-5 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-indigo-100">
                 <h3 className="text-sm font-semibold text-slate-800 mb-1 flex items-center gap-2">
                   <Zap className="w-4 h-4 text-purple-600" />
@@ -726,8 +726,11 @@ const handleSchedulePost = async () => {
                   Run Sheet Automation
                 </Button>
               </div>
+
             </div>
           </motion.div>
+
+          {/* Middle Panel - Generated Content */}
 
           {/* Middle Panel - Generated Content */}
           <motion.div
