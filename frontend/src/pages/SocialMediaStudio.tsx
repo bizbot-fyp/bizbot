@@ -176,16 +176,7 @@ const SocialMediaStudio = () => {
       loadPendingCount(); // Refresh count
     };
 
-    const handleTriggerAutomation = async () => {
-      try {
-        toast.info("Starting automation sequence...");
-        await socialMediaApi.triggerAutomation();
-        toast.success("Automation started! Make.com is reading your Google Sheets.");
-      } catch (error) {
-        toast.error("Failed to start automation. Make sure the backend is running and configured.");
-        console.error(error);
-      }
-    };
+    
 
     const handlePostNeedsReview = (event: CustomEvent) => {
       const { postId, platform, reason } = event.detail;
@@ -431,6 +422,17 @@ const handleSchedulePost = async () => {
         return <Bell className="w-4 h-4 text-slate-500" />;
     }
   };
+
+  const handleTriggerAutomation = async () => {
+      try {
+        toast.info("Starting automation sequence...");
+        await socialMediaApi.triggerAutomation();
+        toast.success("Automation started! Make.com is reading your Google Sheets.");
+      } catch (error) {
+        toast.error("Failed to start automation. Make sure the backend is running and configured.");
+        console.error(error);
+      }
+    };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
