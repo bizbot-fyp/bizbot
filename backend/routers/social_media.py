@@ -930,6 +930,22 @@ async def regenerate_post(
         source=source_val
     )
 
+@router.delete("/posts/pending/all")
+async def delete_all_pending_posts(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Delete all pending posts for the user"""
+    user_id = current_user.id
+    
+    await db.execute(
+        delete(SocialMediaPost).where(
+            SocialMediaPost.user_id == user_id,
+            SocialMediaPost.status == PostStatus.PENDING
+        )
+    )
+    await db.commit()
+    return {"message": "All pending posts deleted successfully"}
 
 @router.delete("/posts/{post_id}")
 async def delete_post(

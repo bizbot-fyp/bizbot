@@ -398,6 +398,23 @@ const SocialMediaVerification: React.FC = () => {
     }
   };
 
+  const handleDeleteAllPending = async () => {
+    if (!window.confirm("Are you sure you want to delete ALL pending posts? This action cannot be undone.")) {
+      return;
+    }
+    
+    try {
+      await socialMediaApi.deleteAllPendingPosts();
+      setPosts((prev) => prev.filter(p => p.status !== "pending"));
+      toast.success("All pending posts have been deleted");
+      await updatePendingCount();
+      await loadCounts();
+    } catch (error) {
+      console.error("Failed to delete all pending posts:", error);
+      toast.error("Failed to delete all pending posts");
+    }
+  };
+
   const markAllNotificationsRead = async () => {
     try {
       await socialMediaApi.markAllNotificationsRead();
@@ -602,6 +619,17 @@ const SocialMediaVerification: React.FC = () => {
                 {approvedCount}
               </span>
             </button>
+            
+            {activeTab === "pending" && pendingCount > 0 && (
+              <Button
+                onClick={handleDeleteAllPending}
+                variant="destructive"
+                className="ml-4 py-2 px-4 rounded-xl flex items-center gap-2 shadow-sm"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete All Pending
+              </Button>
+            )}
           </div>
 
           {/* Total Posts Count */}
