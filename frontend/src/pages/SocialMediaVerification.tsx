@@ -837,22 +837,22 @@ const SocialMediaVerification: React.FC = () => {
         </div>
       </main>
 
-      {/* Review Modal - Same as before */}
+      {/* Review Modal */}
       <Dialog open={isReviewModalOpen} onOpenChange={setIsReviewModalOpen}>
-        <DialogContent className="sm:max-w-lg bg-white rounded-2xl p-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-0">
+        <DialogContent className="sm:max-w-lg bg-white rounded-2xl p-0 overflow-hidden max-h-[90vh] flex flex-col">
+          <DialogHeader className="p-6 pb-0 flex-shrink-0">
             <DialogTitle className="flex items-center gap-2 text-xl">
               <Edit3 className="w-5 h-5 text-indigo-500" />
               Request Content Changes
             </DialogTitle>
           </DialogHeader>
 
-          <div className="p-6">
+          <div className="p-6 overflow-y-auto flex-1">
             {selectedPost && (
               <>
-                <div className="mb-5 p-3 bg-slate-50 rounded-xl">
-                  <p className="text-xs text-slate-500 mb-1">Current Caption:</p>
-                  <p className="text-sm text-slate-700">{selectedPost.caption}</p>
+                <div className="mb-5 p-3 bg-slate-50 rounded-xl max-h-40 overflow-y-auto border border-slate-100">
+                  <p className="text-xs text-slate-500 mb-1 font-semibold">Current Caption:</p>
+                  <p className="text-sm text-slate-700 whitespace-pre-wrap">{selectedPost.caption}</p>
                 </div>
 
                 <div className="mb-5">

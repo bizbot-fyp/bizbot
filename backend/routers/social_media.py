@@ -26,6 +26,7 @@ from services.email_service import send_post_review_email, send_post_approval_em
 # =========================
 MAKE_GENERATOR_WEBHOOK_URL = os.getenv("MAKE_GENERATOR_WEBHOOK_URL")
 MAKE_PUBLISH_WEBHOOK_URL = os.getenv("MAKE_PUBLISH_WEBHOOK_URL")
+MAKE_REGENERATE_WEBHOOK_URL = os.getenv("MAKE_REGENERATE_WEBHOOK_URL")
 
 router = APIRouter(prefix="/social-media", tags=["Social Media"])
 
@@ -843,22 +844,52 @@ async def regenerate_post(
     original_caption = post.caption
     
     # Generate new content
-    platform_texts = {
-        PostPlatform.INSTAGRAM: f"✨ NEW: {request.prompt[:50]}! Experience lightning-fast fiber internet! Blazing speeds, reliable connection. #GameChanger",
-        PostPlatform.FACEBOOK: f"Big news! {request.prompt[:50]}. Our new fiber plans keep you connected like never before.",
-        PostPlatform.TWITTER: f"{request.prompt[:50]}. Ultra-fast fiber internet is here! #FiberFuture",
-        PostPlatform.LINKEDIN: f"Announcing: {request.prompt[:50]}. Next-generation connectivity for businesses.",
-    }
-    
-    new_hashtags = [
-        "#Updated",
-        "#FreshContent",
-        f"#{request.prompt[:20].replace(' ', '')}",
-        "#AIGenerated"
-    ]
-    
-    post.caption = platform_texts.get(post.platform, f"Updated: {request.prompt[:50]}")
-    post.hashtags = new_hashtags
+    if MAKE_REGENERATE_WEBHOOK_URL:
+        print(f"🚀 Triggering Make.com for regeneration on {MAKE_REGENERATE_WEBHOOK_URL}")
+        async with httpx.AsyncClient() as client:
+            payload = {
+                "post_id": post.id,
+                "user_email": current_user.email,
+                "platform": post.platform.value,
+                "prompt": request.prompt,
+                "original_caption": original_caption,
+                "image_url": post.image_url
+            }
+            try:
+                # Wait up to 45 seconds for Make.com to respond with new content
+                response = await client.post(MAKE_REGENERATE_WEBHOOK_URL, json=payload, timeout=45.0)
+                if response.status_code == 200:
+                    data = response.json()
+                    post.caption = data.get("caption", post.caption)
+                    post.hashtags = data.get("hashtags", post.hashtags)
+                    if "image_url" in data and data["image_url"]:
+                        post.image_url = data["image_url"]
+                    print(f"✅ Successfully regenerated post {post.id} via Make.com")
+                else:
+                    print(f"❌ Make.com rejected regeneration request: {response.status_code}")
+                    raise HTTPException(status_code=502, detail="Failed to regenerate content via automation")
+            except httpx.TimeoutException:
+                print("❌ Exception: Make.com regeneration webhook timed out")
+                raise HTTPException(status_code=504, detail="Automation server timeout. The post might still be updated in the background.")
+            except Exception as e:
+                print(f"❌ Exception calling Make.com regeneration webhook: {e}")
+                raise HTTPException(status_code=500, detail="Automation server error")
+    else:
+        print("⚠️ Warning: MAKE_REGENERATE_WEBHOOK_URL is not set. Using dummy data.")
+        platform_texts = {
+            PostPlatform.INSTAGRAM: f"✨ NEW: {request.prompt[:50]}! Experience lightning-fast fiber internet! Blazing speeds, reliable connection. #GameChanger",
+            PostPlatform.FACEBOOK: f"Big news! {request.prompt[:50]}. Our new fiber plans keep you connected like never before.",
+            PostPlatform.TWITTER: f"{request.prompt[:50]}. Ultra-fast fiber internet is here! #FiberFuture",
+            PostPlatform.LINKEDIN: f"Announcing: {request.prompt[:50]}. Next-generation connectivity for businesses.",
+        }
+        new_hashtags = [
+            "#Updated",
+            "#FreshContent",
+            f"#{request.prompt[:20].replace(' ', '')}",
+            "#AIGenerated"
+        ]
+        post.caption = platform_texts.get(post.platform, f"Updated: {request.prompt[:50]}")
+        post.hashtags = new_hashtags
     post.status = PostStatus.PENDING
     post.updated_at = utcnow()
     
