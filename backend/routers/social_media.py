@@ -938,13 +938,31 @@ async def delete_all_pending_posts(
     """Delete all pending posts for the user"""
     user_id = current_user.id
     
-    await db.execute(
-        delete(SocialMediaPost).where(
+    # Get all pending post IDs first
+    result = await db.execute(
+        select(SocialMediaPost.id).where(
             SocialMediaPost.user_id == user_id,
             SocialMediaPost.status == PostStatus.PENDING
         )
     )
-    await db.commit()
+    pending_post_ids = result.scalars().all()
+    
+    if pending_post_ids:
+        # Delete related notifications first to prevent foreign key constraints
+        await db.execute(
+            delete(SocialMediaNotification).where(
+                SocialMediaNotification.post_id.in_(pending_post_ids)
+            )
+        )
+        
+        # Then delete the posts
+        await db.execute(
+            delete(SocialMediaPost).where(
+                SocialMediaPost.id.in_(pending_post_ids)
+            )
+        )
+        await db.commit()
+        
     return {"message": "All pending posts deleted successfully"}
 
 @router.delete("/posts/{post_id}")
@@ -967,6 +985,13 @@ async def delete_post(
     
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Delete related notifications first
+    await db.execute(
+        delete(SocialMediaNotification).where(
+            SocialMediaNotification.post_id == post_id
+        )
+    )
     
     await db.delete(post)
     await db.commit()
