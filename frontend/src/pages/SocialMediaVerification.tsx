@@ -336,38 +336,22 @@ const SocialMediaVerification: React.FC = () => {
         selectedPost.platform
       );
       
-      // Update local state
-      setPosts((prev) =>
-        prev.map((p) =>
-          p.id === selectedPost.id
-            ? {
-                ...p,
-                caption: regenerated.caption,
-                hashtags: regenerated.hashtags,
-                status: "pending",
-              }
-            : p
-        )
-      );
+      // Update local state - Remove the post since it's now waiting for Make.com
+      setPosts((prev) => prev.filter((p) => p.id !== selectedPost.id));
       
       // Add notification
       const newNotification: Notification = {
         id: Date.now().toString(),
         postId: selectedPost.id,
         platform: selectedPost.platform,
-        message: `🔄 ${selectedPost.platform.charAt(0).toUpperCase() + selectedPost.platform.slice(1)} post has been regenerated - needs your review`,
+        message: `🔄 Changes requested for ${selectedPost.platform.charAt(0).toUpperCase() + selectedPost.platform.slice(1)} post. Make.com is working on it!`,
         createdAt: new Date().toISOString(),
         read: false,
         type: "changes_requested",
       };
       setNotifications((prev) => [newNotification, ...prev]);
       
-      // Dispatch event for studio
-      window.dispatchEvent(new CustomEvent('postNeedsReview', { 
-        detail: { postId: selectedPost.id, platform: selectedPost.platform, reason: reviewPrompt } 
-      }));
-      
-      toast.success("Content regenerated! Please review the updated post.");
+      toast.success("Changes requested! The post will reappear when Make.com is done.");
       
       // Refresh posts and counts
       await loadCounts();
