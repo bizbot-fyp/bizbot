@@ -42,6 +42,8 @@ import {
 import { toast } from "sonner";
 import { jwtDecode } from "jwt-decode";
 import { socialMediaApi } from "@/services/socialMediaApi";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 // ==================== TYPES ====================
 
@@ -732,9 +734,13 @@ const SocialMediaVerification: React.FC = () => {
                               <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">
                                 Caption
                               </label>
-                              <p className="text-slate-700 mt-1 text-sm leading-relaxed">
-                                {post.caption}
-                              </p>
+                              <div className="mt-2 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                                <div className="prose prose-sm prose-slate max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-headings:mt-4 prose-headings:mb-2 prose-a:text-indigo-600 prose-strong:text-slate-800">
+                                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                    {post.caption}
+                                  </ReactMarkdown>
+                                </div>
+                              </div>
                             </div>
 
                             <div className="mb-4">
