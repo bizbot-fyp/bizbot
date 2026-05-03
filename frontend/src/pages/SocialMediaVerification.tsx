@@ -42,6 +42,8 @@ import {
 import { toast } from "sonner";
 import { jwtDecode } from "jwt-decode";
 import { socialMediaApi } from "@/services/socialMediaApi";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 // ==================== TYPES ====================
 
@@ -336,38 +338,22 @@ const SocialMediaVerification: React.FC = () => {
         selectedPost.platform
       );
       
-      // Update local state
-      setPosts((prev) =>
-        prev.map((p) =>
-          p.id === selectedPost.id
-            ? {
-                ...p,
-                caption: regenerated.caption,
-                hashtags: regenerated.hashtags,
-                status: "pending",
-              }
-            : p
-        )
-      );
+      // Update local state - Remove the post since it's now waiting for Make.com
+      setPosts((prev) => prev.filter((p) => p.id !== selectedPost.id));
       
       // Add notification
       const newNotification: Notification = {
         id: Date.now().toString(),
         postId: selectedPost.id,
         platform: selectedPost.platform,
-        message: `🔄 ${selectedPost.platform.charAt(0).toUpperCase() + selectedPost.platform.slice(1)} post has been regenerated - needs your review`,
+        message: `🔄 Changes requested for ${selectedPost.platform.charAt(0).toUpperCase() + selectedPost.platform.slice(1)} post. Make.com is working on it!`,
         createdAt: new Date().toISOString(),
         read: false,
         type: "changes_requested",
       };
       setNotifications((prev) => [newNotification, ...prev]);
       
-      // Dispatch event for studio
-      window.dispatchEvent(new CustomEvent('postNeedsReview', { 
-        detail: { postId: selectedPost.id, platform: selectedPost.platform, reason: reviewPrompt } 
-      }));
-      
-      toast.success("Content regenerated! Please review the updated post.");
+      toast.success("Changes requested! The post will reappear when Make.com is done.");
       
       // Refresh posts and counts
       await loadCounts();
@@ -395,6 +381,23 @@ const SocialMediaVerification: React.FC = () => {
     } catch (error) {
       console.error("Failed to delete post:", error);
       toast.error("Failed to delete post");
+    }
+  };
+
+  const handleDeleteAllPending = async () => {
+    if (!window.confirm("Are you sure you want to delete ALL pending posts? This action cannot be undone.")) {
+      return;
+    }
+    
+    try {
+      await socialMediaApi.deleteAllPendingPosts();
+      setPosts((prev) => prev.filter(p => p.status !== "pending"));
+      toast.success("All pending posts have been deleted");
+      await updatePendingCount();
+      await loadCounts();
+    } catch (error) {
+      console.error("Failed to delete all pending posts:", error);
+      toast.error("Failed to delete all pending posts");
     }
   };
 
@@ -602,6 +605,17 @@ const SocialMediaVerification: React.FC = () => {
                 {approvedCount}
               </span>
             </button>
+            
+            {activeTab === "pending" && pendingCount > 0 && (
+              <Button
+                onClick={handleDeleteAllPending}
+                variant="destructive"
+                className="ml-4 py-2 px-4 rounded-xl flex items-center gap-2 shadow-sm"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete All Pending
+              </Button>
+            )}
           </div>
 
           {/* Total Posts Count */}
@@ -720,9 +734,13 @@ const SocialMediaVerification: React.FC = () => {
                               <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">
                                 Caption
                               </label>
-                              <p className="text-slate-700 mt-1 text-sm leading-relaxed">
-                                {post.caption}
-                              </p>
+                              <div className="mt-2 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                                <div className="prose prose-sm prose-slate max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-headings:mt-4 prose-headings:mb-2 prose-a:text-indigo-600 prose-strong:text-slate-800">
+                                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                    {post.caption}
+                                  </ReactMarkdown>
+                                </div>
+                              </div>
                             </div>
 
                             <div className="mb-4">
@@ -809,22 +827,22 @@ const SocialMediaVerification: React.FC = () => {
         </div>
       </main>
 
-      {/* Review Modal - Same as before */}
+      {/* Review Modal */}
       <Dialog open={isReviewModalOpen} onOpenChange={setIsReviewModalOpen}>
-        <DialogContent className="sm:max-w-lg bg-white rounded-2xl p-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-0">
+        <DialogContent className="sm:max-w-lg bg-white rounded-2xl p-0 overflow-hidden max-h-[90vh] flex flex-col">
+          <DialogHeader className="p-6 pb-0 flex-shrink-0">
             <DialogTitle className="flex items-center gap-2 text-xl">
               <Edit3 className="w-5 h-5 text-indigo-500" />
               Request Content Changes
             </DialogTitle>
           </DialogHeader>
 
-          <div className="p-6">
+          <div className="p-6 overflow-y-auto flex-1">
             {selectedPost && (
               <>
-                <div className="mb-5 p-3 bg-slate-50 rounded-xl">
-                  <p className="text-xs text-slate-500 mb-1">Current Caption:</p>
-                  <p className="text-sm text-slate-700">{selectedPost.caption}</p>
+                <div className="mb-5 p-3 bg-slate-50 rounded-xl max-h-40 overflow-y-auto border border-slate-100">
+                  <p className="text-xs text-slate-500 mb-1 font-semibold">Current Caption:</p>
+                  <p className="text-sm text-slate-700 whitespace-pre-wrap">{selectedPost.caption}</p>
                 </div>
 
                 <div className="mb-5">

@@ -1,3 +1,9 @@
+"""
+File Name: social_media.py
+Purpose: Social media endpoints for AI generation, scheduling, and approval.
+Updated to include Make.com Webhook triggers and receivers.
+"""
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete, func
@@ -6,12 +12,21 @@ from datetime import datetime
 from pydantic import BaseModel
 import json
 import traceback
+import httpx  # Added for outgoing Make.com webhook requests
+import os     # Added to read Render environment variables
 
 from database import get_db
 from models import User, SocialMediaPost, SocialMediaNotification, PostPlatform, PostStatus, NotificationType, EmailLog
 from utils.auth_helpers import get_current_user
 from utils.user_helpers import get_user_email, get_user_name
 from services.email_service import send_post_review_email, send_post_approval_email, send_changes_requested_email
+
+# =========================
+# ENVIRONMENT VARIABLES
+# =========================
+MAKE_GENERATOR_WEBHOOK_URL = os.getenv("MAKE_GENERATOR_WEBHOOK_URL")
+MAKE_PUBLISH_WEBHOOK_URL = os.getenv("MAKE_PUBLISH_WEBHOOK_URL")
+MAKE_REGENERATE_WEBHOOK_URL = os.getenv("MAKE_REGENERATE_WEBHOOK_URL")
 
 router = APIRouter(prefix="/social-media", tags=["Social Media"])
 
@@ -50,6 +65,7 @@ class UpdatePostRequest(BaseModel):
     hashtags: Optional[List[str]] = None
     image_url: Optional[str] = None
     scheduled_time: Optional[datetime] = None
+    status: Optional[str] = None
 
 class RegeneratePostRequest(BaseModel):
     prompt: str
@@ -93,6 +109,16 @@ class AIGenerateResponse(BaseModel):
     image_url: str
     posts: List[Dict[str, Any]]
 
+# NEW: Added post_id to allow Make.com to update existing posts during regeneration
+class MakeWebhookRequest(BaseModel):
+    post_id: Optional[int] = None
+    platform: str
+    image_url: Optional[str] = None
+    caption: str
+    hashtags: List[str] = []
+    source: str = "make_automation"
+    user_email: str
+
 
 # =========================
 # HELPER FUNCTIONS
@@ -111,6 +137,146 @@ async def get_pending_count(db: AsyncSession, user_id: int) -> int:
     )
     return result.scalar() or 0
 
+
+# =========================
+# MAKE.COM INTEGRATION ENDPOINTS
+# =========================
+
+@router.post("/trigger-automation")
+async def trigger_make_automation(
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Trigger Make.com to start generating posts from Google Sheets.
+    Passes the secure logged-in user's email to Make.com.
+    """
+    print(f"\n🚀 TRIGGER AUTOMATION CALLED by {current_user.email}")
+    
+    if not MAKE_GENERATOR_WEBHOOK_URL:
+        print("❌ ERROR: MAKE_GENERATOR_WEBHOOK_URL is not set!")
+        raise HTTPException(status_code=500, detail="Automation webhook URL not configured")
+
+    async with httpx.AsyncClient() as client:
+        payload = {
+            "user_email": current_user.email,
+            "trigger_source": "dashboard_button"
+        }
+        try:
+            response = await client.post(MAKE_GENERATOR_WEBHOOK_URL, json=payload)
+            if response.status_code == 200:
+                print("✅ Successfully triggered Make.com automation")
+                return {"status": "success", "message": "Automation triggered successfully!"}
+            else:
+                print(f"❌ Make.com rejected the request: {response.status_code}")
+                raise HTTPException(status_code=response.status_code, detail="Automation server rejected request")
+        except Exception as e:
+            print(f"❌ Failed to trigger automation: {e}")
+            raise HTTPException(status_code=500, detail="Failed to connect to automation server")
+
+@router.post("/webhook/make", response_model=PostResponse)
+async def receive_from_make(
+    request: MakeWebhookRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Unauthenticated endpoint for Make.com. 
+    Handles both CREATING new posts and UPDATING existing posts (regeneration).
+    """
+    print("\n🤖 MAKE.COM WEBHOOK TRIGGERED")
+    print(f"Platform: {request.platform}, User: {request.user_email}, Post ID: {request.post_id}")
+
+    result = await db.execute(select(User.id).where(User.email == request.user_email))
+    user_id = result.scalar_one_or_none()
+    
+    if not user_id:
+        print(f"❌ User not found for email: {request.user_email}")
+        raise HTTPException(status_code=404, detail="User not found")
+
+    try:
+        platform_enum = PostPlatform(request.platform.lower())
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid platform: {request.platform}")
+
+    is_update = False
+    
+    # Check if this is a regeneration of an existing post
+    if request.post_id:
+        result = await db.execute(select(SocialMediaPost).where(SocialMediaPost.id == request.post_id))
+        post = result.scalar_one_or_none()
+        
+        if post:
+            is_update = True
+            post.caption = request.caption
+            if request.image_url:
+                post.image_url = request.image_url
+            if request.hashtags:
+                post.hashtags = request.hashtags
+            
+            # Put the post back into the pending queue for review
+            post.status = PostStatus.PENDING
+            post.updated_at = utcnow()
+            print(f"🔄 Updating existing post ID {post.id} from Make.com regeneration")
+
+    # If no post_id was provided or it wasn't found, create a new one
+    if not is_update:
+        post = SocialMediaPost(
+            user_id=user_id,
+            platform=platform_enum,
+            image_url=request.image_url,
+            caption=request.caption,
+            hashtags=request.hashtags,
+            status=PostStatus.PENDING,
+            source=request.source,
+            created_at=utcnow(),
+            updated_at=utcnow()
+        )
+        db.add(post)
+        print("✨ Creating new post from Make.com generator")
+    
+    await db.commit()
+    await db.refresh(post)
+
+    # Safely store properties before next commit
+    post_id_val = post.id
+    platform_val = post.platform.value
+    image_url_val = post.image_url
+    caption_val = post.caption
+    hashtags_val = post.hashtags
+    status_val = post.status.value
+    scheduled_time_val = post.scheduled_time
+    published_at_val = post.published_at
+    created_at_val = post.created_at
+    updated_at_val = post.updated_at
+    source_val = post.source
+
+    # Create a dashboard notification
+    action_word = "regenerated" if is_update else "generated"
+    notification = SocialMediaNotification(
+        user_id=user_id,
+        post_id=post_id_val,
+        type=NotificationType.NEW_FROM_STUDIO,
+        message=f"📝 {platform_val.capitalize()} post has been {action_word} by AI and needs review",
+        extradata={"platform": platform_val, "source": request.source},
+        created_at=utcnow()
+    )
+    db.add(notification)
+    await db.commit()
+    
+    print(f"✅ Make.com post saved successfully! Post ID: {post_id_val}")
+
+    return PostResponse(
+        id=post_id_val,
+        platform=platform_val,
+        image_url=image_url_val,
+        caption=caption_val,
+        hashtags=hashtags_val,
+        status=status_val,
+        scheduled_time=scheduled_time_val,
+        published_at=published_at_val,
+        created_at=created_at_val,
+        updated_at=updated_at_val,
+        source=source_val
+    )
 
 # =========================
 # POST ENDPOINTS
@@ -545,6 +711,11 @@ async def update_post(
         post.image_url = request.image_url
     if request.scheduled_time is not None:
         post.scheduled_time = remove_timezone(request.scheduled_time)
+    if request.status is not None:
+        try:
+            post.status = PostStatus(request.status.lower())
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {[e.value for e in PostStatus]}")
     
     post.updated_at = utcnow()
     
@@ -612,6 +783,25 @@ async def approve_post(
     updated_at_val = post.updated_at
     source_val = post.source
     caption_preview = caption_val[:100] if caption_val else ""
+
+    # TRIGGER MAKE.COM WEBHOOK
+    if MAKE_PUBLISH_WEBHOOK_URL:
+        async with httpx.AsyncClient() as client:
+            payload = {
+                "post_id": post_id_val,
+                "platform": platform_val,
+                "caption": caption_val,
+                "image_url": image_url_val,
+                "user_id": user_id
+            }
+            try:
+                response = await client.post(MAKE_PUBLISH_WEBHOOK_URL, json=payload)
+                print(f"🚀 Sent to Make.com! Status: {response.status_code}")
+            except Exception as e:
+                print(f"❌ Failed to trigger Make.com webhook: {e}")
+                print(traceback.format_exc())
+    else:
+        print("⚠️ Warning: MAKE_PUBLISH_WEBHOOK_URL is not set in environment variables.")
     
     # Create notification
     notification = SocialMediaNotification(
@@ -682,24 +872,36 @@ async def regenerate_post(
     # Store original
     original_caption = post.caption
     
-    # Generate new content
-    platform_texts = {
-        PostPlatform.INSTAGRAM: f"✨ NEW: {request.prompt[:50]}! Experience lightning-fast fiber internet! Blazing speeds, reliable connection. #GameChanger",
-        PostPlatform.FACEBOOK: f"Big news! {request.prompt[:50]}. Our new fiber plans keep you connected like never before.",
-        PostPlatform.TWITTER: f"{request.prompt[:50]}. Ultra-fast fiber internet is here! #FiberFuture",
-        PostPlatform.LINKEDIN: f"Announcing: {request.prompt[:50]}. Next-generation connectivity for businesses.",
-    }
-    
-    new_hashtags = [
-        "#Updated",
-        "#FreshContent",
-        f"#{request.prompt[:20].replace(' ', '')}",
-        "#AIGenerated"
-    ]
-    
-    post.caption = platform_texts.get(post.platform, f"Updated: {request.prompt[:50]}")
-    post.hashtags = new_hashtags
-    post.status = PostStatus.PENDING
+    # Generate new content trigger
+    if MAKE_REGENERATE_WEBHOOK_URL:
+        print(f"🚀 Triggering Make.com for regeneration on {MAKE_REGENERATE_WEBHOOK_URL}")
+        import asyncio
+        async def trigger_make(post_id_val, email_val, platform_val, prompt_val, orig_cap_val, img_val):
+            async with httpx.AsyncClient() as client:
+                payload = {
+                    "post_id": post_id_val,
+                    "user_email": email_val,
+                    "platform": platform_val,
+                    "prompt": prompt_val,
+                    "original_caption": orig_cap_val,
+                    "image_url": img_val
+                }
+                try:
+                    await client.post(MAKE_REGENERATE_WEBHOOK_URL, json=payload, timeout=5.0)
+                except Exception as e:
+                    print(f"⚠️ Non-critical exception calling Make.com regeneration webhook: {e}")
+                    
+        asyncio.create_task(
+            trigger_make(
+                post.id, current_user.email, post.platform.value, 
+                request.prompt, original_caption, post.image_url
+            )
+        )
+    else:
+        print("⚠️ Warning: MAKE_REGENERATE_WEBHOOK_URL is not set. Make sure Make.com is fetching from the database.")
+
+    # Mark as REJECTED so it moves out of the pending queue. Make.com will update it later.
+    post.status = PostStatus.REJECTED
     post.updated_at = utcnow()
     
     # Store revision
@@ -770,6 +972,40 @@ async def regenerate_post(
         source=source_val
     )
 
+@router.delete("/posts/pending/all")
+async def delete_all_pending_posts(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Delete all pending posts for the user"""
+    user_id = current_user.id
+    
+    # Get all pending post IDs first
+    result = await db.execute(
+        select(SocialMediaPost.id).where(
+            SocialMediaPost.user_id == user_id,
+            SocialMediaPost.status == PostStatus.PENDING
+        )
+    )
+    pending_post_ids = result.scalars().all()
+    
+    if pending_post_ids:
+        # Delete related notifications first to prevent foreign key constraints
+        await db.execute(
+            delete(SocialMediaNotification).where(
+                SocialMediaNotification.post_id.in_(pending_post_ids)
+            )
+        )
+        
+        # Then delete the posts
+        await db.execute(
+            delete(SocialMediaPost).where(
+                SocialMediaPost.id.in_(pending_post_ids)
+            )
+        )
+        await db.commit()
+        
+    return {"message": "All pending posts deleted successfully"}
 
 @router.delete("/posts/{post_id}")
 async def delete_post(
@@ -791,6 +1027,13 @@ async def delete_post(
     
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Delete related notifications first
+    await db.execute(
+        delete(SocialMediaNotification).where(
+            SocialMediaNotification.post_id == post_id
+        )
+    )
     
     await db.delete(post)
     await db.commit()

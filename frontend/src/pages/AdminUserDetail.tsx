@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 
-const API_URL = "http://localhost:8000";
+import { API_URL } from "@/lib/api";
 
 // Real User interface matching your backend
 interface UserData {

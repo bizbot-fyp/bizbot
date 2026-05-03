@@ -25,6 +25,7 @@ import {
   Bell,
   CheckCircle,
   AlertCircle,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -174,6 +175,8 @@ const SocialMediaStudio = () => {
       toast.success(`🎉 ${platform} post was approved and published!`);
       loadPendingCount(); // Refresh count
     };
+
+    
 
     const handlePostNeedsReview = (event: CustomEvent) => {
       const { postId, platform, reason } = event.detail;
@@ -420,6 +423,17 @@ const handleSchedulePost = async () => {
     }
   };
 
+  const handleTriggerAutomation = async () => {
+      try {
+        toast.info("Starting automation sequence...");
+        await socialMediaApi.triggerAutomation();
+        toast.success("Automation started! Make.com is reading your Google Sheets.");
+      } catch (error) {
+        toast.error("Failed to start automation. Make sure the backend is running and configured.");
+        console.error(error);
+      }
+    };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
       {/* Header */}
@@ -625,77 +639,36 @@ const handleSchedulePost = async () => {
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Panel - Input */}
+          {/* Left Panel - Input */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
             <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-6">
-              <h2 className="text-lg font-semibold text-slate-800 mb-4">
-                Content Topic
-              </h2>
-              <Input
-                type="text"
-                placeholder="e.g., New Fiber Optic Plans - Launch"
-                value={contentTopic}
-                onChange={(e) => setContentTopic(e.target.value)}
-                className="mb-6"
-              />
-
-              <h3 className="text-sm font-medium text-slate-700 mb-3">
-                Platforms
-              </h3>
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                {(Object.keys(platforms) as Array<keyof Platform>).map(
-                  (platform) => (
-                    <button
-                      key={platform}
-                      onClick={() => handlePlatformToggle(platform)}
-                      className={`flex items-center gap-2 p-3 rounded-xl border transition-all ${
-                        platforms[platform]
-                          ? `bg-gradient-to-r ${getPlatformColor(platform)} text-white border-transparent shadow-md`
-                          : "bg-white border-slate-200 hover:bg-slate-50"
-                      }`}
-                    >
-                      {getPlatformIcon(platform)}
-                      <span className="text-sm font-medium capitalize">
-                        {platform}
-                      </span>
-                    </button>
-                  ),
-                )}
+              {/* AUTOMATION SECTION */}
+              <div className="mt-8 p-5 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-indigo-100">
+                <h3 className="text-sm font-semibold text-slate-800 mb-1 flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-purple-600" />
+                  Fully Automated Mode
+                </h3>
+                <p className="text-xs text-slate-600 mb-4 leading-relaxed">
+                  Trigger your AI agent to pull topics directly from your connected Google Sheets and generate posts in the background.
+                </p>
+                <Button 
+                  onClick={handleTriggerAutomation}
+                  variant="outline"
+                  className="w-full bg-white border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800 shadow-sm"
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  Run Sheet Automation
+                </Button>
               </div>
 
-              <h3 className="text-sm font-medium text-slate-700 mb-3">
-                Desired Tone
-              </h3>
-              <RadioGroup value={tone} onValueChange={setTone} className="mb-6">
-                {["excited", "informative", "professional"].map((t) => (
-                  <div key={t} className="flex items-center space-x-2">
-                    <RadioGroupItem value={t} id={t} />
-                    <Label htmlFor={t} className="capitalize cursor-pointer text-slate-700">
-                      {t}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
-
-              <Button
-                onClick={handleGenerateContent}
-                disabled={isGenerating}
-                className="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white shadow-md transition-all"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  "Generate Content"
-                )}
-              </Button>
             </div>
           </motion.div>
+
+          {/* Middle Panel - Generated Content */}
 
           {/* Middle Panel - Generated Content */}
           <motion.div

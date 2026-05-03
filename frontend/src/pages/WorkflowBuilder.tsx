@@ -50,7 +50,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
-const API_URL = "http://localhost:8000";
+import { API_URL } from "@/lib/api";
 
 interface NodePosition {
   x: number;

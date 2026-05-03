@@ -154,6 +154,17 @@ export const socialMediaApi = {
     return handleResponse(response);
   },
 
+  // Delete all pending posts
+  deleteAllPendingPosts: async () => {
+    const response = await fetch(`${API_BASE_URL}/social-media/posts/pending/all`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${getAuthToken()}`,
+      },
+    });
+    return handleResponse(response);
+  },
+
   // Get pending count
   getPendingCount: async () => {
     const response = await fetch(`${API_BASE_URL}/social-media/posts/pending/count`, {
@@ -211,6 +222,18 @@ export const socialMediaApi = {
     const response = await fetch(`${API_BASE_URL}/social-media/notifications`, {
       method: 'DELETE',
       headers: {
+        'Authorization': `Bearer ${getAuthToken()}`,
+      },
+    });
+    return handleResponse(response);
+  },
+
+  // Trigger Make.com Automation
+  triggerAutomation: async () => {
+    const response = await fetch(`${API_BASE_URL}/social-media/trigger-automation`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
         'Authorization': `Bearer ${getAuthToken()}`,
       },
     });
